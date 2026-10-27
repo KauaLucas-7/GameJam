@@ -26,6 +26,7 @@
   },
   "name":"Sheborg",
   "resources":[
+    {"id":{"name":"obj_battle","path":"objects/obj_battle/obj_battle.yy",},},
     {"id":{"name":"obj_Nexa","path":"objects/obj_Nexa/obj_Nexa.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"scr_units","path":"scripts/scr_units/scr_units.yy",},},
