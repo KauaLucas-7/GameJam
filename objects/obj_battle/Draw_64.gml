@@ -2,13 +2,17 @@ draw_set_color(c_white);
 draw_text(4, 4, "Estado: " + string(state));   // dica do guia: debug do estado
 
 // Aliados (esquerda)
-for (var i = 0; i < array_length(party); i++) {
+for (var i = 0; i < array_length(party); i+=1) {
     var _u = party[i];
-    var _x = 60, _y = 60 + i * 50;
+    var _x = 80, _y = 100 + i * 60;
     if (_u.hp > 0) {
-        draw_set_color(c_aqua);
-        draw_rectangle(_x, _y, _x + 24, _y + 32, false);
-        draw_set_color(c_white);
+       if(_u.sprite !=1){
+		   draw_sprite(_u.sprite, 0, _x, _y);
+	   }else {
+		draw_set_color(c_aqua);
+	    draw_rectangle(_x, _y, _x + 24, _y + 32, false);
+	    draw_set_color(c_white);
+	   }
         if (_u == current) draw_text(_x - 14, _y + 8, ">");
     }
     draw_text(_x - 30, _y + 34, _u.name + " " + string(_u.hp) + "/" + string(_u.hp_max));

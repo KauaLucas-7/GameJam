@@ -1,11 +1,11 @@
 display_set_gui_size(480, 270); 
 
-enum BATTLE_STATES { START,PLAYER_MENU, PLAYER_TARGET, EXECUTE_ACTION, ENEMY_TURN, CHECK_END, WIN, LOSE }
+enum BATTLE_STATE { START,PLAYER_MENU, PLAYER_TARGET, EXECUTE_ACTION, ENEMY_TURN, CHECK_END, WIN, LOSE }
 
 state = BATTLE_STATE.START;
 
 party = [ make_unit("Heroi", 40, 20, 10, 3, 8, true) ]; 
-
+party[0].sprite = spr_Nexa;
 //alternar o nome dos inimigos
 var _slime = make_unit("Slime", 20, 10, 6, 1, 5, false);
 _slime.weak_to = "fire";

@@ -1,8 +1,8 @@
 switch (state) {
 
     case BATTLE_STATE.START:
-        current = turn_order[turn_index];
-        state = current.is_ally ? BATTLE_STATE.PLAYER_MENU : BATTLE_STATE.ENEMY_TURN;
+		current = turn_order[turn_index];			
+        state = current.is_player ? BATTLE_STATE.PLAYER_MENU : BATTLE_STATE.ENEMY_TURN;
         break;
 
     case BATTLE_STATE.PLAYER_MENU:
@@ -69,7 +69,7 @@ switch (state) {
         else {
             next_turn();
             menu_index = 0;
-            state = current.is_ally ? BATTLE_STATE.PLAYER_MENU : BATTLE_STATE.ENEMY_TURN;
+            state = current.is_player ? BATTLE_STATE.PLAYER_MENU : BATTLE_STATE.ENEMY_TURN;
         }
         break;
 
