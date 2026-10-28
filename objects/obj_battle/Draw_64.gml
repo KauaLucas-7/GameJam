@@ -7,7 +7,9 @@ for (var i = 0; i < array_length(party); i+=1) {
     var _x = 80, _y = 100 + i * 60;
     if (_u.hp > 0) {
        if(_u.sprite !=1){
-		   draw_sprite(_u.sprite, 0, _x, _y);
+		   var _frames = sprite_get_number(_u.sprite);
+var _frame  = floor(current_time / 1000 * 6) mod _frames; 
+draw_sprite(_u.sprite, _frame, _x, _y);
 	   }else {
 		draw_set_color(c_aqua);
 	    draw_rectangle(_x, _y, _x + 24, _y + 32, false);
