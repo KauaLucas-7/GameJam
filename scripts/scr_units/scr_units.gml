@@ -9,6 +9,10 @@ function make_unit(_name, _hp, _mp, _atk, _def, _spd, _is_player){
 		defending: false,    //Se True o personagem ira defender o ataque.
 		weak_to: "none",    //elemento que causa dano extra
 		status: [],         //efeitos como veneno
-		sprite: -1
+		sprite: -1,
+		is_dice: false 
 	};
 }
+
+
+

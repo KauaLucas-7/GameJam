@@ -27,10 +27,13 @@
   "name":"Sheborg",
   "resources":[
     {"id":{"name":"obj_battle","path":"objects/obj_battle/obj_battle.yy",},},
+    {"id":{"name":"obj_Luta01","path":"objects/obj_Luta01/obj_Luta01.yy",},},
     {"id":{"name":"obj_Nexa","path":"objects/obj_Nexa/obj_Nexa.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"scr_skills","path":"scripts/scr_skills/scr_skills.yy",},},
     {"id":{"name":"scr_units","path":"scripts/scr_units/scr_units.yy",},},
+    {"id":{"name":"spr_BancoDb","path":"sprites/spr_BancoDb/spr_BancoDb.yy",},},
+    {"id":{"name":"spr_Luta01","path":"sprites/spr_Luta01/spr_Luta01.yy",},},
     {"id":{"name":"spr_Nexa","path":"sprites/spr_Nexa/spr_Nexa.yy",},},
   ],
   "resourceType":"GMProject",
