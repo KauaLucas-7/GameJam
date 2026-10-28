@@ -26,7 +26,7 @@ _slime.weak_to = "fire";
 
 var _dado = make_unit("Dado BD", 50, 0, 9, 2, 4, false);
 _dado.is_dice = true;
-_dado.sprite = spr_BancoDb;
+_dado.sprite = spr_BancoDB;
 enemies = [ _dado ];
 
 // --- Ordem dos turnos ---

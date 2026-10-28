@@ -1,6 +1,6 @@
 {
   "$GMSprite":"v2",
-  "%Name":"spr_BancoDb",
+  "%Name":"spr_BancoDB",
   "bboxMode":0,
   "bbox_bottom":239,
   "bbox_left":54,
@@ -21,7 +21,7 @@
   "layers":[
     {"$GMImageLayer":"","%Name":"54583a8f-fdf3-4abc-a83e-0e6c09c10096","blendMode":0,"displayName":"default","isLocked":false,"name":"54583a8f-fdf3-4abc-a83e-0e6c09c10096","opacity":100.0,"resourceType":"GMImageLayer","resourceVersion":"2.0","visible":true,},
   ],
-  "name":"spr_BancoDb",
+  "name":"spr_BancoDB",
   "nineSlice":null,
   "origin":4,
   "parent":{
@@ -33,7 +33,7 @@
   "resourceVersion":"2.0",
   "sequence":{
     "$GMSequence":"v1",
-    "%Name":"spr_BancoDb",
+    "%Name":"spr_BancoDB",
     "autoRecord":true,
     "backdropHeight":768,
     "backdropImageOpacity":0.5,
@@ -57,7 +57,7 @@
       "resourceType":"KeyframeStore<MomentsEventKeyframe>",
       "resourceVersion":"2.0",
     },
-    "name":"spr_BancoDb",
+    "name":"spr_BancoDB",
     "playback":1,
     "playbackSpeed":30.0,
     "playbackSpeedType":0,
@@ -69,7 +69,7 @@
     "tracks":[
       {"$GMSpriteFramesTrack":"","builtinName":0,"events":[],"inheritsTrackColour":true,"interpolation":1,"isCreationTrack":false,"keyframes":{"$KeyframeStore<SpriteFrameKeyframe>":"","Keyframes":[
             {"$Keyframe<SpriteFrameKeyframe>":"","Channels":{
-                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"bdeb9d7b-2a9c-47b1-917f-e88cf4b9d0be","path":"sprites/spr_BancoDb/spr_BancoDb.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
+                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"bdeb9d7b-2a9c-47b1-917f-e88cf4b9d0be","path":"sprites/spr_BancoDB/spr_BancoDB.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
               },"Disabled":false,"id":"9722f434-2f66-4178-8770-12b5cfcd4a41","IsCreationKey":false,"Key":0.0,"Length":1.0,"resourceType":"Keyframe<SpriteFrameKeyframe>","resourceVersion":"2.0","Stretch":false,},
           ],"resourceType":"KeyframeStore<SpriteFrameKeyframe>","resourceVersion":"2.0",},"modifiers":[],"name":"frames","resourceType":"GMSpriteFramesTrack","resourceVersion":"2.0","spriteId":null,"trackColour":0,"tracks":[],"traits":0,},
     ],

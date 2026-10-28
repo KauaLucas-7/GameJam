@@ -1,4 +1,4 @@
-// Tremor: desloca tudo que for desenhado abaixo
+// Tremor
 matrix_set(matrix_world, matrix_build(shake_x, shake_y, 0, 0, 0, 0, 1, 1, 1));
 
 draw_set_color(c_white);
@@ -27,10 +27,55 @@ for (var i = 0; i < array_length(party); i++) {
                               + "  MP " + string(_u.mp) + "/" + string(_u.mp_max));
 }
 
+// Debuff do UPDATE
+if (atk_debuff > 0) {
+    draw_set_color(c_red);
+    draw_text(20, 165, "ATK -30% (" + string(atk_debuff) + ")");
+    draw_set_color(c_white);
+}
+
 // Inimigos (direita)
 var _alive = alive_list(enemies);
 for (var i = 0; i < array_length(enemies); i++) {
     var _e = enemies[i];
+
+    // ----- BOSS DADO -----
+    if (_e.is_dice) {
+        var _dx = 370, _dy = 125;
+        var _ang = 0, _oy = 0, _sc = 0.6;   // _sc = tamanho do dado (ajuste se ficar grande/pequeno)
+
+        if (_e.hp > 0) {
+            if (state == BATTLE_STATE.ROLL && roll_timer < 60) {
+                var _pr = roll_timer / 60;
+                _ang = 720 * (1 - sqr(1 - _pr));                        // gira e desacelera
+                _oy  = -abs(sin(roll_timer * 0.35)) * 30 * (1 - _pr);   // quica cada vez menos
+            } else {
+                _oy = sin(current_time / 400) * 3;                      // flutua parado
+            }
+            if (state == BATTLE_STATE.ROLL && roll_timer >= 60 && roll_timer < 70) {
+                _sc = 0.6 + (70 - roll_timer) * 0.01;                   // "pop" ao pousar
+            }
+
+            var _col = c_white;
+            if (boss_exposed)    _col = c_yellow;   // NULL: exposto
+            if (boss_recharging) _col = c_gray;     // DROP TABLE: recarregando
+            draw_sprite_ext(_e.sprite, 0, _dx, _dy + _oy, _sc, _sc, _ang, _col, 1);
+
+            if (boss_exposed)    { draw_set_color(c_yellow); draw_text(_dx - 28, _dy - 60, "EXPOSTO!"); }
+            if (boss_recharging) { draw_set_color(c_gray);   draw_text(_dx - 40, _dy - 60, "RECARREGANDO"); }
+            draw_set_color(c_white);
+
+            if (_e == current) draw_text(_dx - 50, _dy - 6, "<");
+            if (state == BATTLE_STATE.PLAYER_TARGET && _e == _alive[target_index])
+                draw_text(_dx - 4, _dy - 56, "v");
+        }
+
+        if (_e.hp_shown > 0.5) draw_hp_bar(_dx - 40, _dy + 42, 80, 6, _e);
+        draw_text(_dx - 40, _dy + 50, _e.name + " " + string(_e.hp) + "/" + string(_e.hp_max));
+        continue;
+    }
+
+    // ----- Inimigos normais -----
     var _x = 380, _y = 60 + i * 60;
 
     if (_e.hp > 0) {
@@ -42,8 +87,17 @@ for (var i = 0; i < array_length(enemies); i++) {
             draw_text(_x + 4, _y - 14, "v");
     }
 
-    if (_e.hp_shown > 0.5) draw_hp_bar(_x - 20, _y + 36, 70, 5, _e);   // continua esvaziando depois da morte
+    if (_e.hp_shown > 0.5) draw_hp_bar(_x - 20, _y + 36, 70, 5, _e);
     draw_text(_x - 20, _y + 43, _e.name + " " + string(_e.hp) + "/" + string(_e.hp_max));
+}
+
+// Selo da face do dado (o número sorteado e o nome do ataque)
+if (roll_active && current.is_dice &&
+    (state == BATTLE_STATE.ROLL || state == BATTLE_STATE.DEFENSE || state == BATTLE_STATE.EXECUTE_ACTION)) {
+    var _landed = (state != BATTLE_STATE.ROLL) || (roll_timer >= 60);
+    var _fn = _landed ? roll_result : roll_face_shown;
+    draw_dice_face(268, 100, 40, _fn);
+    if (_landed) draw_text(258, 144, dice_faces[roll_result - 1].name);
 }
 
 // Menu principal
@@ -51,8 +105,9 @@ if (state == BATTLE_STATE.PLAYER_MENU || state == BATTLE_STATE.PLAYER_SKILL) {
     for (var i = 0; i < array_length(menu_options); i++) {
         var _txt = menu_options[i];
         if (i == 3) _txt += " (" + string(global.items.potion.qty) + ")";
+        if (i == menu_locked) _txt += " (APAGADA)";
 
-        var _ready = !(i == 4 && energy < energy_max);   // Especial bloqueado sem energia
+        var _ready = !(i == 4 && energy < energy_max) && (i != menu_locked);
         draw_set_color(_ready ? c_white : c_gray);
         var _cursor = (i == menu_index) ? "> " : "  ";
         draw_text(20, 190 + i * 16, _cursor + _txt);
@@ -111,7 +166,7 @@ if (state == BATTLE_STATE.PLAYER_TIMING) {
 if (state == BATTLE_STATE.DEFENSE) {
     var _t = clamp(def_timer / def_hit, 0, 1);
     var _r = lerp(48, 14, _t);
-    var _in_window = abs(def_timer - def_hit) <= 8;
+    var _in_window = abs(def_timer - def_hit) <= def_good;
 
     draw_set_color(c_white);
     draw_circle(def_x, def_y, 14, true);
@@ -122,24 +177,23 @@ if (state == BATTLE_STATE.DEFENSE) {
     draw_text(150, 130, "DEFENDA! (ESPACO)");
 }
 
-// Números flutuantes (por cima de tudo)
+// Números flutuantes
 draw_set_halign(fa_center);
 draw_set_valign(fa_middle);
 for (var i = 0; i < array_length(popups); i++) {
     var _p = popups[i];
-    var _t = 1 - _p.life / _p.life_max;
-    var _sc = 1 + max(0, 0.5 - _t * 4);        // começa grande e encolhe ("pop")
-    draw_set_alpha(min(1, _p.life / 15));      // some nos últimos frames
+    var _tt = 1 - _p.life / _p.life_max;
+    var _scp = 1 + max(0, 0.5 - _tt * 4);
+    draw_set_alpha(min(1, _p.life / 15));
 
-    draw_set_color(c_black);                   // sombra para dar leitura
-    draw_text_transformed(_p.x + 1, _p.y + 1, _p.text, _sc, _sc, 0);
+    draw_set_color(c_black);
+    draw_text_transformed(_p.x + 1, _p.y + 1, _p.text, _scp, _scp, 0);
     draw_set_color(_p.color);
-    draw_text_transformed(_p.x, _p.y, _p.text, _sc, _sc, 0);
+    draw_text_transformed(_p.x, _p.y, _p.text, _scp, _scp, 0);
 }
 draw_set_alpha(1);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
 draw_set_color(c_white);
 
-// Volta a matriz ao normal
 matrix_set(matrix_world, matrix_build_identity());
