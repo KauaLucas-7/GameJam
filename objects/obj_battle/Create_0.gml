@@ -5,10 +5,14 @@ enum BATTLE_STATE { START, PLAYER_MENU, PLAYER_SKILL, PLAYER_TARGET, PLAYER_TIMI
 
 state = BATTLE_STATE.START;
 
+// JUNTADO: andar atual (1 = boss Dado, 2 = boss Python, outro = inimigos normais)
+if (!variable_global_exists("andar")) global.andar = 1;   // mude para 2 para testar o Python
+
 // --- Skills e itens (recriados a cada batalha) ---
 global.skills = {
     shock:    { name: "Curto circuito", cost: 5, power: 19, element: "lightning", heal: false },
     fireball: { name: "Bola de fogo",   cost: 8, power: 16, element: "fire",      heal: false },
+    ice:      { name: "Raio de gelo",   cost: 6, power: 17, element: "ice",       heal: false },   // JUNTADO: 3o tipo do Python
     cure:     { name: "Cura",           cost: 6, power: 15, element: "none",      heal: true  }
 };
 
@@ -16,18 +20,39 @@ global.items = {
     potion: { name: "Pocao", heal: 20, qty: 3 }
 };
 
+// JUNTADO: boss Python (tipos e elementos)
+global.last_skill_note = "";
+global.boss_types = [
+    { name: "INT",   element: "lightning", color: c_aqua   },
+    { name: "STR",   element: "fire",      color: c_orange },
+    { name: "FLOAT", element: "ice",       color: c_lime   }
+];
+
 // --- Unidades ---
 party = [ make_unit("Heroi", 40, 20, 10, 3, 8, true) ];
 party[0].sprite = spr_Nexa;
-party[0].skills = [ global.skills.shock, global.skills.fireball, global.skills.cure ];
+party[0].skills = [ global.skills.shock, global.skills.fireball, global.skills.ice, global.skills.cure ];
 
-var _slime = make_unit("Slime", 20, 10, 6, 1, 5, false);
-_slime.weak_to = "fire";
-
-var _dado = make_unit("Dado BD", 50, 0, 9, 2, 4, false);
-_dado.is_dice = true;
-_dado.sprite = spr_BancoDB;
-enemies = [ _dado ];
+// JUNTADO: o inimigo depende do andar
+if (global.andar == 1) {
+    // ----- Andar 1: boss Dado (Banco de Dados) -----
+    var _dado = make_unit("Dado BD", 50, 0, 9, 2, 4, false);
+    _dado.is_dice = true;
+    _dado.sprite = spr_BancoDB;
+    enemies = [ _dado ];
+}
+else if (global.andar == 2) {
+    // ----- Andar 2: boss Python -----
+    var _python = make_unit("Python", 80, 0, 9, 2, 7, false);
+    boss_init(_python);
+    enemies = [ _python ];
+}
+else {
+    // ----- Qualquer outro valor: inimigos normais -----
+    var _slime = make_unit("Slime", 20, 10, 6, 1, 5, false);
+    _slime.weak_to = "fire";
+    enemies = [ _slime, make_unit("Goblin", 25, 15, 8, 2, 6, false) ];
+}
 
 // --- Ordem dos turnos ---
 turn_order = array_concat(party, enemies);
@@ -106,6 +131,9 @@ shake_y = 0;
 for (var i = 0; i < array_length(turn_order); i++) {
     turn_order[i].hp_shown = turn_order[i].hp;   // valor "desenhado" da barra
     turn_order[i].hp_prev  = turn_order[i].hp;   // HP do frame anterior
+
+    // JUNTADO: o Draw lê is_dice de toda unidade; garante o campo mesmo que o make_unit não crie
+    if (!variable_struct_exists(turn_order[i], "is_dice")) turn_order[i].is_dice = false;
 }
 
 get_unit_pos = function(_u) {
