@@ -16,14 +16,21 @@ array_sort(turn_order, function(a, b) { return b.spd - a.spd; });
 turn_index = 0;
 current = turn_order[turn_index]
 
+log_text = "A batalha começou!"
 menu_options = ["Atacar", "Defender", "Habilidade", "Item"];
 menu_index = 0;
 target_index = 0;
 chosen_action = "";
 timer = 0;
 
-potions = 3;
-log_text = "";
+global.skills = {
+	shock: {name:"Curto circuito", cost:5, power: 19, element: "lightning", heal: false	}
+};
+
+global.items = {
+potion: { name: "pocao", heal: 20, qty: 3 }
+};
+chosen_skill = global.skills.shock;
 
 //oponente vivo
 alive_list = function(_arr) {

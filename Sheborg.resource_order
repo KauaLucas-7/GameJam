@@ -10,5 +10,6 @@
   "ResourceOrderSettings":[
     {"name":"obj_battle","order":2,"path":"objects/obj_battle/obj_battle.yy",},
     {"name":"obj_Nexa","order":1,"path":"objects/obj_Nexa/obj_Nexa.yy",},
+    {"name":"scr_skills","order":1,"path":"scripts/scr_skills/scr_skills.yy",},
   ],
 }

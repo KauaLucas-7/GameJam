@@ -40,7 +40,7 @@ for (var i = 0; i < array_length(enemies); i++) {
 if (state == BATTLE_STATE.PLAYER_MENU) {
     for (var i = 0; i < array_length(menu_options); i++) {
         var _txt = menu_options[i];
-        if (i == 3) _txt += " (" + string(potions) + ")";
+        if (i == 3) _txt += " (" + string(use_item) + ")";
         draw_text(20, 190 + i * 16, ((i == menu_index) ? "> " : "  ") + _txt);
     }
 }

@@ -20,14 +20,13 @@ switch (state) {
                     state = BATTLE_STATE.CHECK_END;
                     break;
                 case 3: // Item (poção cura o aliado atual, sem alvo)
-                    if (potions > 0) {
-                        potions--;
-                        current.hp = min(current.hp_max, current.hp + 15);
-                        log_text = current.name + " usou Pocao (+15 HP).";
+                    if (use_item(current, potion)) {
+                        log_text = current.name + " usou " + potion.name + " (+" + string(potion.heal) + " HP)."
                         timer = 45;
-                        state = BATTLE_STATE.EXECUTE_ACTION;
-                    } else {
+						state = BATTLE_STATE.EXECUTE_ACTION;
+					} else {
                         log_text = "Sem pocoes!";
+						state = BATTLE_STATE.CHECK_END;
                     }
                     break;
             }
@@ -43,12 +42,25 @@ switch (state) {
 
         if (keyboard_check_pressed(vk_enter)) {
             var _target = _alive[target_index];
-            if (chosen_action == "attack") deal_damage(current, _target, 1,   "");
-            if (chosen_action == "skill")  deal_damage(current, _target, 1.5, "fire");
-            timer = 45;
-            state = BATTLE_STATE.EXECUTE_ACTION;
+			
+            if (chosen_action == "attack"){
+				deal_damage(current, _target, 1, "");
+				timer = 30;
+				state = BATTLE_STATE.EXECUTE_ACTION;
+			}
+            else if (chosen_action == "skill"){
+				if(use_skill(current, use_skill, _target)){
+					timer =30;
+					state = BATTLE_STATE.EXECUTE_ACTION;
+				}
+			}else {
+				log_text = "Sem MP!";
+				state = BATTLE_STATE.PLAYER_MENU; // Sem MP volta ao menu
+			}
         }
-        break;
+
+      
+	 
 
     case BATTLE_STATE.ENEMY_TURN:
         var _allies = alive_list(party);
