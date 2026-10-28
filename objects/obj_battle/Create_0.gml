@@ -6,7 +6,7 @@ enum BATTLE_STATE { START, PLAYER_MENU, PLAYER_SKILL, PLAYER_TARGET, PLAYER_TIMI
 state = BATTLE_STATE.START;
 
 // JUNTADO: andar atual (1 = boss Dado, 2 = boss Python, outro = inimigos normais)
-if (!variable_global_exists("andar")) global.andar = 1;   // mude para 2 para testar o Python
+if (!variable_global_exists("andar")) global.andar = 2;   // mude para 2 para testar o Python
 
 // --- Skills e itens (recriados a cada batalha) ---
 global.skills = {
@@ -44,6 +44,7 @@ if (global.andar == 1) {
 else if (global.andar == 2) {
     // ----- Andar 2: boss Python -----
     var _python = make_unit("Python", 80, 0, 9, 2, 7, false);
+	_python.sprite = spr_python;
     boss_init(_python);
     enemies = [ _python ];
 }

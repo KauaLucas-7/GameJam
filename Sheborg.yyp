@@ -36,6 +36,7 @@
     {"id":{"name":"spr_BancoDB","path":"sprites/spr_BancoDB/spr_BancoDB.yy",},},
     {"id":{"name":"spr_Luta01","path":"sprites/spr_Luta01/spr_Luta01.yy",},},
     {"id":{"name":"spr_Nexa","path":"sprites/spr_Nexa/spr_Nexa.yy",},},
+    {"id":{"name":"spr_python","path":"sprites/spr_python/spr_python.yy",},},
   ],
   "resourceType":"GMProject",
   "resourceVersion":"2.0",

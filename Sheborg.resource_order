@@ -13,5 +13,6 @@
     {"name":"scr_boss_python","order":3,"path":"scripts/scr_boss_python/scr_boss_python.yy",},
     {"name":"scr_skills","order":1,"path":"scripts/scr_skills/scr_skills.yy",},
     {"name":"scr_status","order":2,"path":"scripts/scr_status/scr_status.yy",},
+    {"name":"spr_python","order":1,"path":"sprites/spr_python/spr_python.yy",},
   ],
 }

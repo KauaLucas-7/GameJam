@@ -26,20 +26,13 @@ for (var i = 0; i < array_length(party); i++) {
     draw_text(_x - 30, _y + 35, _u.name + " HP " + string(_u.hp) + "/" + string(_u.hp_max)
                               + "  MP " + string(_u.mp) + "/" + string(_u.mp_max));
 
-    // JUNTADO: indicador de veneno (boss Python)
+    // Indicador de veneno (boss Python)
     var _ps = status_stacks(_u, "poison");
     if (_ps > 0 && _u.hp > 0) {
         draw_set_color(c_green);
         draw_text(_x - 30, _y + 47, "VENENO x" + string(_ps));
         draw_set_color(c_white);
     }
-}
-
-// Debuff do UPDATE
-if (atk_debuff > 0) {
-    draw_set_color(c_red);
-    draw_text(20, 165, "ATK -30% (" + string(atk_debuff) + ")");
-    draw_set_color(c_white);
 }
 
 // Debuff do UPDATE
@@ -90,16 +83,50 @@ for (var i = 0; i < array_length(enemies); i++) {
         continue;
     }
 
-    // ----- Inimigos normais (e o boss Python) -----
+    // ----- BOSS PYTHON (com sprite) -----
+    if (variable_struct_exists(_e, "typed") && _e.sprite != -1) {
+        var _px = 370, _py = 120;
+        var _pscale = 0.6;   // tamanho do sprite (ajuste se ficar grande/pequeno)
+        var _tcol = global.boss_types[_e.type_index].color;
+
+        if (_e.hp > 0) {
+            var _pfr  = floor(current_time / 1000 * 6) mod sprite_get_number(_e.sprite);
+            var _bob  = sin(current_time / 400) * 3;               // flutua parado
+            var _tint = merge_colour(c_white, _tcol, 0.45);        // tinge de leve com a cor do tipo
+            draw_sprite_ext(_e.sprite, _pfr, _px, _py + _bob, _pscale, _pscale, 0, _tint, 1);
+
+            // cauda: um quadradinho por segmento
+            draw_set_color(_tcol);
+            for (var s = 0; s < _e.tail; s++) {
+                draw_rectangle(_px - 36 + s * 10, _py + 80, _px - 30 + s * 10, _py + 86, false);
+            }
+            draw_set_color(c_white);
+
+            if (_e == current) draw_text(_px - 70, _py - 6, "<");
+            if (state == BATTLE_STATE.PLAYER_TARGET && _e == _alive[target_index])
+                draw_text(_px - 4, _py - 60, "v");
+        }
+
+        if (_e.hp_shown > 0.5) draw_hp_bar(_px - 40, _py + 42, 80, 6, _e);
+        draw_text(_px - 40, _py + 50, _e.name + " " + string(_e.hp) + "/" + string(_e.hp_max));
+        if (_e.hp > 0) {
+            draw_set_color(_tcol);
+            draw_text(_px - 40, _py + 64, "TIPO: " + global.boss_types[_e.type_index].name);
+            draw_set_color(c_white);
+        }
+        continue;
+    }
+
+    // ----- Inimigos normais (e o Python sem sprite) -----
     var _x = 380, _y = 60 + i * 60;
-    var _boss = variable_struct_exists(_e, "typed");   // JUNTADO: é o boss Python?
+    var _boss = variable_struct_exists(_e, "typed");
 
     if (_e.hp > 0) {
-        // JUNTADO: o Python usa a cor do tipo atual; os outros continuam vermelhos
+        // O Python usa a cor do tipo atual; os outros continuam vermelhos
         draw_set_color(_boss ? global.boss_types[_e.type_index].color : c_red);
         draw_rectangle(_x, _y, _x + 24, _y + 32, false);
 
-        // JUNTADO: cauda do Python (um quadradinho por segmento)
+        // Cauda do Python (um quadradinho por segmento)
         if (_boss) {
             for (var s = 0; s < _e.tail; s++) {
                 draw_rectangle(_x + 28 + s * 7, _y + 24, _x + 33 + s * 7, _y + 29, false);
@@ -115,21 +142,12 @@ for (var i = 0; i < array_length(enemies); i++) {
     if (_e.hp_shown > 0.5) draw_hp_bar(_x - 20, _y + 36, 70, 5, _e);
     draw_text(_x - 20, _y + 43, _e.name + " " + string(_e.hp) + "/" + string(_e.hp_max));
 
-    // JUNTADO: tipo atual do Python
+    // Tipo atual do Python
     if (_boss && _e.hp > 0) {
         draw_set_color(global.boss_types[_e.type_index].color);
         draw_text(_x - 20, _y + 55, "TIPO: " + global.boss_types[_e.type_index].name);
         draw_set_color(c_white);
     }
-}
-
-// Selo da face do dado (o número sorteado e o nome do ataque)
-if (roll_active && current.is_dice &&
-    (state == BATTLE_STATE.ROLL || state == BATTLE_STATE.DEFENSE || state == BATTLE_STATE.EXECUTE_ACTION)) {
-    var _landed = (state != BATTLE_STATE.ROLL) || (roll_timer >= 60);
-    var _fn = _landed ? roll_result : roll_face_shown;
-    draw_dice_face(268, 100, 40, _fn);
-    if (_landed) draw_text(258, 144, dice_faces[roll_result - 1].name);
 }
 
 // Selo da face do dado (o número sorteado e o nome do ataque)
@@ -171,7 +189,7 @@ if (state == BATTLE_STATE.PLAYER_SKILL) {
 }
 
 // Log e fim de batalha
-draw_text(160, 256, log_text);   // JUNTADO: y mudou de 245 para 256 (4 skills no submenu)
+draw_text(160, 256, log_text);   // y=256 para não encostar no submenu de 4 skills
 if (state == BATTLE_STATE.WIN)  draw_text(190, 20, "VITORIA! (Enter)");
 if (state == BATTLE_STATE.LOSE) draw_text(190, 20, "DERROTA... (Enter)");
 
