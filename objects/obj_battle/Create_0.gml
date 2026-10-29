@@ -44,21 +44,22 @@ if (global.andar == 1) {
     var _dado = make_unit("Dado BD", 50, 0, 9, 2, 4, false);
     _dado.is_dice = true;
     _dado.sprite = spr_BancoDB;
-	_dado.rewards = ["gorilla", "mantis"];
+    _dado.rewards = ["gorilla", "mantis"];
     enemies = [ _dado ];
 }
 else if (global.andar == 2) {
     // ----- Andar 2: boss Python -----
     var _python = make_unit("Python", 80, 0, 9, 2, 7, false);
-	_python.sprite = spr_python;
-	_python.rewards = ["subdermal", "kerenzikov", "tendons", "ankles"];
+    _python.sprite = spr_python;
+    _python.rewards = ["subdermal", "kerenzikov", "tendons", "ankles"];
     boss_init(_python);
     enemies = [ _python ];
 }
 else if (global.andar == 3) {
     // ----- Andar 3: o Chefe (urso) -----
     var _urso = make_urso();
-    _urso.sprite = spr_urso;   // quando tiver o sprite (origem Middle Centre), tire o //
+    _urso.sprite = spr_urso;
+    _urso.sprite_attack = spr_urso_attack;
     urso = _urso;
     enemies = [ _urso ];
 }

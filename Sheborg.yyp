@@ -17,7 +17,9 @@
     {"$GMFolder":"","%Name":"Sounds","folderPath":"folders/Sounds.yy","name":"Sounds","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Sprites","folderPath":"folders/Sprites.yy","name":"Sprites","resourceType":"GMFolder","resourceVersion":"2.0",},
   ],
-  "ForcedPrefabProjectReferences":[],
+  "ForcedPrefabProjectReferences":[
+    {"link":"io.gamemaker.gm_filter_hard_drop_shadow-1.0.0","name":"io.gamemaker.gm_filter_hard_drop_shadow-1.0.0","path":"io.gamemaker.gm_filter_hard_drop_shadow-1.0.0.yyp",},
+  ],
   "IncludedFiles":[],
   "isEcma":false,
   "LibraryEmitters":[],
@@ -53,6 +55,7 @@
     {"id":{"name":"spr_sala_bd","path":"sprites/spr_sala_bd/spr_sala_bd.yy",},},
     {"id":{"name":"spr_sala_python","path":"sprites/spr_sala_python/spr_sala_python.yy",},},
     {"id":{"name":"spr_sala_urso","path":"sprites/spr_sala_urso/spr_sala_urso.yy",},},
+    {"id":{"name":"spr_urso_attack","path":"sprites/spr_urso_attack/spr_urso_attack.yy",},},
     {"id":{"name":"spr_urso","path":"sprites/spr_urso/spr_urso.yy",},},
     {"id":{"name":"Sprite9","path":"sprites/Sprite9/Sprite9.yy",},},
   ],

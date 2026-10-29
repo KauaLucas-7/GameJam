@@ -32,6 +32,7 @@
     {"name":"spr_sala_bd","order":10,"path":"sprites/spr_sala_bd/spr_sala_bd.yy",},
     {"name":"spr_sala_python","order":9,"path":"sprites/spr_sala_python/spr_sala_python.yy",},
     {"name":"spr_sala_urso","order":11,"path":"sprites/spr_sala_urso/spr_sala_urso.yy",},
+    {"name":"spr_urso_attack","order":12,"path":"sprites/spr_urso_attack/spr_urso_attack.yy",},
     {"name":"spr_urso","order":7,"path":"sprites/spr_urso/spr_urso.yy",},
     {"name":"Sprite9","order":8,"path":"sprites/Sprite9/Sprite9.yy",},
   ],

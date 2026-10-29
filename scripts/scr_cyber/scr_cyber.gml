@@ -20,7 +20,7 @@ function cyber_init() {
     global.mod_overlay = { arms: spr_Nexa_arms, torso: spr_Nexa_torso, legs: spr_Nexa_legs };
 
     // Ponto (no sprite) que a oficina destaca em cada parte do corpo
-    global.mod_marker = { arms: {x: 5, y: 35}, torso: {x: 11, y: 30}, legs: {x: 11, y: 41} };
+    global.mod_marker = { arms: {x: 26, y: 27}, torso: {x: 33, y: 21}, legs: {x: 32, y: 45} };
 }
 
 function cyber_give(_id) {

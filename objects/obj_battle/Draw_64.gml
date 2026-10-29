@@ -7,7 +7,7 @@ draw_text(4, 4, "Estado: " + string(state));
 // Aliados (esquerda)
 for (var i = 0; i < array_length(party); i++) {
     var _u = party[i];
-    var _x = 80, _y = 100 + i * 60;
+    var _x = 80, _y = 96 + i * 70;                       // NOVO: sobe 4 e espaça 70
 
     if (_u.hp > 0) {
         if (_u.sprite != -1) {
@@ -23,15 +23,14 @@ for (var i = 0; i < array_length(party); i++) {
         if (_u == current) draw_text(_x - 45, _y - 8, ">");
     }
 
-    if (_u.hp_shown > 0.5) draw_hp_bar(_x - 30, _y + 28, 70, 5, _u);
-    draw_text(_x - 30, _y + 35, _u.name + " HP " + string(_u.hp) + "/" + string(_u.hp_max)
-                              + "  MP " + string(_u.mp) + "/" + string(_u.mp_max));
+    if (_u.hp_shown > 0.5) draw_hp_bar(_x - 30, _y + 36, 70, 5, _u);        // NOVO: 28 -> 36
+    draw_text(_x - 30, _y + 43, _u.name + " HP " + string(_u.hp) + "/" + string(_u.hp_max)
+                              + "  MP " + string(_u.mp) + "/" + string(_u.mp_max));   // NOVO: 35 -> 43
 
-    // Indicador de veneno (boss Python)
     var _ps = status_stacks(_u, "poison");
     if (_ps > 0 && _u.hp > 0) {
         draw_set_color(c_green);
-        draw_text(_x - 30, _y + 47, "VENENO x" + string(_ps));
+        draw_text(_x - 30, _y + 55, "VENENO x" + string(_ps));                // NOVO: 47 -> 55
         draw_set_color(c_white);
     }
 }
@@ -117,16 +116,29 @@ for (var i = 0; i < array_length(enemies); i++) {
         }
         continue;
     }
-	    // ----- BOSS URSO e FUNCIONARIOS MOLDADOS -----
+	       // ----- BOSS URSO e FUNCIONARIOS MOLDADOS -----
     if (is_urso(_e) || is_worker(_e)) {
         var _b = is_urso(_e);
         var _ux = _e.pos.x, _uy = _e.pos.y;
         var _uw = _b ? 56 : 22, _uh = _b ? 72 : 30;
         var _ubob = sin(current_time / 400 + i) * (_b ? 2 : 1);
 
+        // Urso com sprite: 160x200 a 55% do tamanho
+        var _sc = 1;
+        if (_b && _e.sprite != -1) { _sc = 0.55; _uw = 88; _uh = 110; }
+
         if (_e.hp > 0) {
             if (_e.sprite != -1) {
-                draw_sprite_ext(_e.sprite, 0, _ux, _uy + _ubob, 1, 1, 0, c_white, 1);
+                // Idle (4 frames por segundo) ou, durante o ataque do Urso, a animação de golpe
+                var _spr = _e.sprite;
+                var _fr  = floor(current_time / 1000 * 4) mod sprite_get_number(_spr);
+
+                if (_b && variable_struct_exists(_e, "sprite_attack") && _e == current &&
+                    (state == BATTLE_STATE.DEFENSE || state == BATTLE_STATE.EXECUTE_ACTION)) {
+                    _spr = _e.sprite_attack;
+                    _fr = (state == BATTLE_STATE.DEFENSE) ? clamp(floor(def_timer / (def_hit / 3)), 0, 2) : 3;
+                }
+                draw_sprite_ext(_spr, _fr, _ux, _uy + _ubob, _sc, _sc, 0, c_white, 1);
             } else {
                 // sem sprite ainda: retângulos de teste
                 draw_set_color(_b ? make_colour_rgb(120, 70, 30) : c_gray);
@@ -357,7 +369,7 @@ if (molde_on) {
         draw_rectangle(0, 0, 480, 270, false);
         draw_set_alpha(1);
         if (state != BATTLE_STATE.WIN && party[0].sprite != -1)
-            cyber_draw(party[0].sprite, 0, 240, 70, 2, c_gray);   // Nexa apagada
+            cyber_draw(party[0].sprite, 0, 240, 60, 1.5, c_gray);   // era (…, 240, 70, 2, c_gray)
         draw_set_halign(fa_center);
         for (var k = 0; k < array_length(_scene); k++) {
             if (scene_timer > 60 + k * 90) {
