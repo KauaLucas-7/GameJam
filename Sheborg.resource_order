@@ -21,5 +21,6 @@
     {"name":"spr_Nexa_legs","order":4,"path":"sprites/spr_Nexa_legs/spr_Nexa_legs.yy",},
     {"name":"spr_Nexa_torso","order":3,"path":"sprites/spr_Nexa_torso/spr_Nexa_torso.yy",},
     {"name":"spr_python","order":1,"path":"sprites/spr_python/spr_python.yy",},
+    {"name":"spr_urso","order":5,"path":"sprites/spr_urso/spr_urso.yy",},
   ],
 }

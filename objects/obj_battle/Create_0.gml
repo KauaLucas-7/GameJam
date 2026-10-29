@@ -58,7 +58,7 @@ else if (global.andar == 2) {
 else if (global.andar == 3) {
     // ----- Andar 3: o Chefe (urso) -----
     var _urso = make_urso();
-    // _urso.sprite = spr_Urso;   // quando tiver o sprite (origem Middle Centre), tire o //
+    _urso.sprite = spr_urso;   // quando tiver o sprite (origem Middle Centre), tire o //
     urso = _urso;
     enemies = [ _urso ];
 }

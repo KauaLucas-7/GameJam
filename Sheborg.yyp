@@ -44,6 +44,7 @@
     {"id":{"name":"spr_Nexa_torso","path":"sprites/spr_Nexa_torso/spr_Nexa_torso.yy",},},
     {"id":{"name":"spr_Nexa","path":"sprites/spr_Nexa/spr_Nexa.yy",},},
     {"id":{"name":"spr_python","path":"sprites/spr_python/spr_python.yy",},},
+    {"id":{"name":"spr_urso","path":"sprites/spr_urso/spr_urso.yy",},},
   ],
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
