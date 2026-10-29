@@ -544,9 +544,14 @@ switch (state) {
         break;
 
     case BATTLE_STATE.MOLD_END:
-    case BATTLE_STATE.ENDING_BAD:
         scene_timer++;
         if (scene_timer > 330 && keyboard_check_pressed(vk_enter)) room_restart();
+        break;
+
+    case BATTLE_STATE.ENDING_BAD:
+        // Aceitou a proposta: depois da cena curta, vai para a cutscene do final ruim
+        scene_timer++;
+        if (scene_timer > 200) trocar_sala(rm_final_ruim, "fade");
         break;
 
         case BATTLE_STATE.WIN:

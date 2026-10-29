@@ -21,6 +21,49 @@ draw_set_color(c_white);
 var _fr = floor(anim / 10) mod sprite_get_number(spr_Nexa);
 
 // =====================================================================
+//  AVISO DE CONTEÚDO SENSÍVEL (primeira tela do jogo)
+// =====================================================================
+if (tela == "aviso") {
+	var _a = ease_out(t / 40);
+	draw_set_alpha(0.75);
+	draw_set_color(c_black);
+	draw_rectangle(0, 0, 480, 270, false);
+	draw_set_alpha(_a);
+	draw_set_color(make_colour_rgb(10, 12, 24));
+	draw_roundrect(40, 26, 440, 244, false);
+	draw_set_color(c_yellow);
+	draw_roundrect(40, 26, 440, 244, true);
+
+	draw_set_halign(fa_center);
+	draw_text_transformed(240, 36, texto_seguro("AVISO DE CONTEÚDO"), 1.4, 1.4, 0);
+	draw_set_color(c_white);
+	var _txt = [
+		"Este jogo aborda temas sensíveis:",
+		"machismo e desigualdade de gênero no trabalho,",
+		"assédio e importunação sexual, e suicídio.",
+		"As cenas não são explícitas.",
+		"",
+		"Se algum desses temas mexe com você,",
+		"jogue no seu ritmo e faça pausas quando precisar."
+	];
+	for (var i = 0; i < array_length(_txt); i++) {
+		draw_text_transformed(240, 66 + i * 13, texto_seguro(_txt[i]), 0.85, 0.85, 0);
+	}
+	draw_set_color(c_aqua);
+	draw_text_transformed(240, 164, texto_seguro("Precisa conversar? CVV: ligue 188"), 0.8, 0.8, 0);
+	draw_text_transformed(240, 177, texto_seguro("24h, gratuito e sigiloso - cvv.org.br"), 0.8, 0.8, 0);
+	draw_text_transformed(240, 194, texto_seguro("Violência contra a mulher: Ligue 180"), 0.8, 0.8, 0);
+	if (t > 45) {
+		draw_set_alpha(_a * (0.5 + 0.5 * sin(current_time / 200)));
+		draw_set_color(c_ltgray);
+		draw_text(240, 220, "[ENTER] continuar");
+	}
+	draw_set_halign(fa_left);
+	draw_set_alpha(1);
+	draw_set_color(c_white);
+}
+
+// =====================================================================
 if (tela == "titulo" || tela == "comojogar" || tela == "creditos") {
 	// Robôs ao fundo e a Nexa com as peças de metal "piscando"
 	var _rx = [292, 330, 416, 454];

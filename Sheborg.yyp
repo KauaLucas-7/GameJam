@@ -34,6 +34,7 @@
     {"id":{"name":"obj_controle","path":"objects/obj_controle/obj_controle.yy",},},
     {"id":{"name":"obj_corredor","path":"objects/obj_corredor/obj_corredor.yy",},},
     {"id":{"name":"obj_dialogo","path":"objects/obj_dialogo/obj_dialogo.yy",},},
+    {"id":{"name":"obj_final_ruim","path":"objects/obj_final_ruim/obj_final_ruim.yy",},},
     {"id":{"name":"obj_final","path":"objects/obj_final/obj_final.yy",},},
     {"id":{"name":"obj_gatilho","path":"objects/obj_gatilho/obj_gatilho.yy",},},
     {"id":{"name":"obj_interagivel","path":"objects/obj_interagivel/obj_interagivel.yy",},},
@@ -51,6 +52,7 @@
     {"id":{"name":"rm_andar3","path":"rooms/rm_andar3/rm_andar3.yy",},},
     {"id":{"name":"rm_corredor1","path":"rooms/rm_corredor1/rm_corredor1.yy",},},
     {"id":{"name":"rm_corredor2","path":"rooms/rm_corredor2/rm_corredor2.yy",},},
+    {"id":{"name":"rm_final_ruim","path":"rooms/rm_final_ruim/rm_final_ruim.yy",},},
     {"id":{"name":"rm_final","path":"rooms/rm_final/rm_final.yy",},},
     {"id":{"name":"rm_menu","path":"rooms/rm_menu/rm_menu.yy",},},
     {"id":{"name":"rm_oficina","path":"rooms/rm_oficina/rm_oficina.yy",},},
@@ -106,6 +108,7 @@
     {"roomId":{"name":"rm_corredor1","path":"rooms/rm_corredor1/rm_corredor1.yy",},},
     {"roomId":{"name":"rm_corredor2","path":"rooms/rm_corredor2/rm_corredor2.yy",},},
     {"roomId":{"name":"rm_final","path":"rooms/rm_final/rm_final.yy",},},
+    {"roomId":{"name":"rm_final_ruim","path":"rooms/rm_final_ruim/rm_final_ruim.yy",},},
   ],
   "templateType":"game",
   "TextureGroups":[

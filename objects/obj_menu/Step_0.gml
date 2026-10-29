@@ -11,6 +11,10 @@ var _volta = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(vk_back
 
 switch (tela) {
 
+	case "aviso":
+		if (_ok && t > 45) { tela = "titulo"; t = 0; }
+		break;
+
 	case "titulo":
 		if (_cima)  sel = (sel - 1 + array_length(opcoes)) mod array_length(opcoes);
 		if (_baixo) sel = (sel + 1) mod array_length(opcoes);

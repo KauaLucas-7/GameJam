@@ -7,7 +7,7 @@ usar_fonte();
 garantir_controle();
 cyber_init();
 
-tela = "titulo";
+tela = "aviso";   // aviso de conteúdo sensível antes do menu
 t = 0;
 anim = 0;
 opcoes = ["Novo jogo", "Como jogar", "Créditos", "Sair"];

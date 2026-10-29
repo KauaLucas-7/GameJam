@@ -425,9 +425,7 @@ if (molde_on) {
                    "FIM DE JOGO (Enter para tentar de novo)" ];
     } else if (state == BATTLE_STATE.ENDING_BAD) {
         _scene = [ "Nexa aceita a proposta.",
-                   "O Urso sorri. A empresa ganha mais uma peca.",
-                   "Ninguem foi libertado. Todos continuam moldados.",
-                   "FINAL RUIM (Enter para tentar de novo)" ];
+                   "O Urso sorri. A empresa ganha mais uma peca." ];   // continua em rm_final_ruim
     } else if (state == BATTLE_STATE.WIN) {
         var _names = "";
         for (var f = 0; f < array_length(freed_names); f++) _names += ((f > 0) ? ", " : "") + freed_names[f];
