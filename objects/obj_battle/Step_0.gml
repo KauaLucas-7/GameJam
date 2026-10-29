@@ -114,6 +114,7 @@ switch (state) {
                 case 1: // Defender (animação: escudo hexagonal)
                     current.defending = true;
 					chosen_action = "defend";
+					som(snd_bloqueio);
                     log_text = current.name + " se defende.";
                     iniciar_acao("defesa", 28);
                     timer = 26;

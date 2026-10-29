@@ -43,6 +43,9 @@ function marcar(_k)  { global.flags[$ _k] = true; }
 
 // Coloca uma animação na fila: "nova", "atualizada" ou "concluida"
 function avisar(_tipo, _titulo, _texto) {
+	// Som de missao: recebida (nova) ou cumprida (concluida)
+	if (_tipo == "nova") som(snd_missao_recebida);
+	if (_tipo == "concluida") som(snd_missao_cumprida);
 	// a atualização logo depois da "nova" missão é redundante: só troca o texto
 	var _n = array_length(global.fila_missoes);
 	if (_tipo == "atualizada" && _n > 0 && global.fila_missoes[_n - 1].titulo == _titulo

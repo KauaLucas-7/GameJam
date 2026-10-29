@@ -83,6 +83,7 @@ else {
 // Música da luta: cada chefe tem a sua; as outras lutas usam o tema ambiente
 if (global.andar == 1)      tocar_musica(snd_musica_boss_banco);
 else if (global.andar == 2) tocar_musica(snd_musica_boss_python);
+else if (global.andar == 3) tocar_musica(snd_musica_boss_urso);
 else                        tocar_musica(snd_musica_ambiente);
 
 // --- Ordem dos turnos ---
@@ -119,7 +120,10 @@ deal_damage = function(_atk, _tgt, _mult, _element) {
     if (_tgt.defending) _d = floor(_d / 2);
     _d = max(1, _d);
     _tgt.hp = max(0, _tgt.hp - _d);
-    som(snd_ataque);
+    // Som do golpe: a Nexa apanhando, ataque especial ou ataque comum
+    if (_tgt.is_player) som(snd_receber_dano);
+    else if (_atk.is_player && chosen_action == "special") som(snd_ataque_especial);
+    else som(snd_ataque);
     log_text = _atk.name + " causou " + string(_d) + " em " + _tgt.name
              + (_weak ? " (fraqueza!)" : "");
 }
@@ -281,6 +285,7 @@ start_boss_attack = function(_mult, _hits, _hit_frame, _perfect, _good, _heavy) 
 
 // Com vários golpes seguidos, vale o pior resultado para o combo
 register_defense = function(_res) {
+    if (_res != "miss") som(snd_bloqueio);
     if (def_first) last_result = _res;
     else if (_res == "miss" || last_result == "miss") last_result = "miss";
     else if (_res == "good" || last_result == "good") last_result = "good";

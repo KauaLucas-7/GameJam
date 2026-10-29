@@ -7,6 +7,7 @@
 display_set_gui_size(480, 270);
 usar_fonte();
 garantir_controle();
+tocar_musica(snd_musica_final_bom);
 cyber_init();
 
 fase = "cena";   // "cena" -> "creditos"
