@@ -123,12 +123,24 @@ function garantir_controle() {
 	if (!instance_exists(obj_controle)) instance_create_depth(0, 0, -15000, obj_controle);
 }
 
+// --- Versão web (HTML5) ---
+// No navegador: TAB tira o foco da página, F1 abre a ajuda do navegador,
+// game_end() não fecha nada e a janela precisa caber na aba.
+function eh_web() {
+	return os_browser != browser_not_a_browser;
+}
+
+// Abre/fecha o diário de missões: Q, M ou TAB (TAB não é confiável na web)
+function tecla_missoes() {
+	return keyboard_check_pressed(ord("Q")) || keyboard_check_pressed(ord("M")) || keyboard_check_pressed(vk_tab);
+}
+
 // --- Tutorial da exploração (estado em jogo_estado_inicial) ---
 function tut_texto(_e) {
 	switch (_e) {
 		case 0: return "Use WASD ou as setas para andar.";
 		case 1: return "Chegue perto de alguém e aperte [E] para conversar.";
-		case 2: return "Aperte [TAB] para abrir o diário de missões.";
+		case 2: return "Aperte [Q] para abrir o diário de missões.";
 		case 3: return "Arquivos brilhantes, espelhos e terminais também respondem ao [E].";
 		case 4: return "Enfrente o Banco de Dados, perto da mesa de reunião: chegue perto e aperte [E].";
 		case 5: return "Tutorial concluído! Bom jogo.";

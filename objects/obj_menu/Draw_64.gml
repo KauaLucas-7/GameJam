@@ -21,6 +21,27 @@ draw_set_color(c_white);
 var _fr = floor(anim / 10) mod sprite_get_number(spr_Nexa);
 
 // =====================================================================
+//  VERSÃO WEB: "Clique para começar" (dá o foco do teclado ao jogo)
+// =====================================================================
+if (tela == "clique") {
+	draw_set_alpha(0.6);
+	draw_set_color(c_black);
+	draw_rectangle(0, 0, 480, 270, false);
+	draw_set_alpha(1);
+	draw_set_halign(fa_center);
+	draw_set_color(c_white);
+	draw_text_transformed(240, 92, "SHEBORG", 3.4, 3.4, 0);
+	draw_set_color(c_aqua);
+	draw_text(240, 140, texto_seguro("Quebre o molde."));
+	draw_set_alpha(0.5 + 0.5 * sin(current_time / 200));
+	draw_set_color(c_yellow);
+	draw_text(240, 190, texto_seguro("Clique para começar"));
+	draw_set_alpha(1);
+	draw_set_halign(fa_left);
+	draw_set_color(c_white);
+}
+
+// =====================================================================
 //  AVISO DE CONTEÚDO SENSÍVEL (primeira tela do jogo)
 // =====================================================================
 if (tela == "aviso") {
@@ -134,7 +155,7 @@ if (tela == "comojogar" || tela == "creditos") {
 			["h", "EXPLORAÇÃO"],
 			["", "WASD / Setas: andar"],
 			["", "E: conversar e interagir"],
-			["", "TAB: diário de missões"],
+			["", "Q (ou TAB): diário de missões"],
 			["", "Portas brilhantes levam a outros ambientes"],
 			["", "Terminal MOD: equipar implantes e ferramentas"],
 			["h", "BATALHA"],

@@ -2,6 +2,15 @@
 // reaplica sempre para que cards, diálogos e menus fiquem em 480x270.
 if (display_get_gui_width() != 480 || display_get_gui_height() != 270) display_set_gui_size(480, 270);
 
+// Web: encaixa o jogo na aba do navegador, sem cortar e sem distorcer (16:9)
+if (eh_web() && (browser_width != web_w || browser_height != web_h)) {
+	web_w = browser_width;
+	web_h = browser_height;
+	var _esc = min(web_w / 1440, web_h / 810);
+	window_set_size(max(1, floor(1440 * _esc)), max(1, floor(810 * _esc)));
+	window_center();
+}
+
 var _ok = keyboard_check_pressed(vk_space) || keyboard_check_pressed(vk_enter);
 
 // ===== Transição entre salas =====

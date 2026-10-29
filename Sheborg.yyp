@@ -60,6 +60,7 @@
     {"id":{"name":"rom_banco_fight","path":"rooms/rom_banco_fight/rom_banco_fight.yy",},},
     {"id":{"name":"rom_urso_fight","path":"rooms/rom_urso_fight/rom_urso_fight.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
+    {"id":{"name":"scr_batalha_fx","path":"scripts/scr_batalha_fx/scr_batalha_fx.yy",},},
     {"id":{"name":"scr_boss_python","path":"scripts/scr_boss_python/scr_boss_python.yy",},},
     {"id":{"name":"scr_boss_urso","path":"scripts/scr_boss_urso/scr_boss_urso.yy",},},
     {"id":{"name":"scr_cyber","path":"scripts/scr_cyber/scr_cyber.yy",},},

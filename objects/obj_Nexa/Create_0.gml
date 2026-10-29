@@ -4,7 +4,7 @@ usar_fonte();   // fonte com acentos (ou a padrão, se ainda não foi gerada)
 cyber_init();   // mods (para desenhar as partes equipadas no mapa)
 display_set_gui_size(480, 270);
 paredes_criar();        // paredes invisíveis da sala (scr_paredes)
-diario_aberto = false;  // TAB abre o diário de missões
+diario_aberto = false;  // Q (ou M/TAB) abre o diário de missões
 diario_sel = 0;         // missão selecionada no diário
 diario_anim = 0;        // 0 = fechado, 1 = aberto (animação)
 garantir_controle();    // transições e animações de missão (obj_controle)

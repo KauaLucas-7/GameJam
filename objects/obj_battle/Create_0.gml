@@ -42,7 +42,7 @@ global.boss_types = [
 ];
 
 // --- Unidades ---
-party = [ make_unit("Heroi", 40, 20, 10, 3, 8, true) ];
+party = [ make_unit("Nexa", 40, 20, 10, 3, 8, true) ];
 party[0].sprite = spr_Nexa;
 party[0].skills = [ global.skills.shock, global.skills.fireball, global.skills.ice, global.skills.cure ];
 if (variable_global_exists("skill_autoconfianca") && global.skill_autoconfianca) array_push(party[0].skills, global.skills.autoconfianca);
@@ -178,6 +178,7 @@ get_unit_pos = function(_u) {
     for (var i = 0; i < array_length(enemies); i++) {
         if (enemies[i] == _u) {
             if (_u.is_dice) return { x: 370, y: 125 };
+            if (variable_struct_exists(_u, "typed") && _u.sprite != -1) return { x: 370, y: 108 };   // Python (mesmo ponto do Draw)
             return { x: 392, y: 76 + i * 60 };
         }
     }
@@ -334,6 +335,7 @@ spawn_worker = function() {
             if (!variable_struct_exists(_w, "is_dice")) _w.is_dice = false;
             _w.hp_shown = _w.hp;
             _w.hp_prev  = _w.hp;
+            _w.hurt = 0;
             array_push(enemies, _w);
             array_push(turn_order, _w);   // entra no fim da ordem: age depois do Urso
             add_popup(_slots[s].x, _slots[s].y - 30, "MOLDADO!", c_gray);
@@ -367,6 +369,16 @@ free_worker = function(_w) {
     remove_worker(_w);
 }
 reward_given = false;
+
+// ===== ANIMAÇÕES (scr_batalha_fx) =====
+acao = { tipo: "", t: 0, dur: 0, alvo: undefined, el: "none", imp: undefined, dx: 0 };
+fx = [];
+especial_escuro = 0;   // tela escurece no golpe especial
+especial_clarao = 0;   // clarão quando o especial acerta
+menu_anim = 0;         // posição animada da seleção do menu
+skill_anim = 0;        // posição animada da seleção de habilidade
+alvo_anim = 0;         // posição animada da seta de alvo
+for (var i = 0; i < array_length(turn_order); i++) turn_order[i].hurt = 0;
 
 // ===== TUTORIAL DE BATALHA =====
 // Na 1ª vez que cada mecânica aparece, a luta pausa e mostra uma dica.

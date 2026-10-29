@@ -12,7 +12,7 @@ if (diario_anim < 0.05) {
 	draw_roundrect(4, 250, 190, 266, false);
 	draw_set_alpha(0.9);
 	draw_set_color(c_white);
-	draw_text(10, 252, texto_seguro("[E] Interagir   [TAB] Missões"));
+	draw_text(10, 252, texto_seguro("[E] Interagir   [Q] Missões"));
 	if (_ativas > 0) {   // bolinha com o número de missões ativas
 		draw_set_color(c_yellow);
 		draw_circle(184, 258, 6, false);
@@ -190,6 +190,6 @@ if (_ms.estado == 0) {
 
 // Rodapé
 draw_set_color(c_gray);
-draw_text_transformed(_x1 + 8, _y2 - 16, texto_seguro("[Cima/Baixo] escolher    [TAB] fechar"), 0.75, 0.75, 0);
+draw_text_transformed(_x1 + 8, _y2 - 16, texto_seguro("[Cima/Baixo] escolher    [Q] fechar"), 0.75, 0.75, 0);
 draw_set_alpha(1);
 draw_set_color(c_white);

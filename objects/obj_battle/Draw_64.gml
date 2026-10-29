@@ -77,35 +77,26 @@ matrix_set(matrix_world, matrix_build(shake_x, shake_y, 0, 0, 0, 0, 1, 1, 1));
 draw_set_color(c_white);
 if (global.ver_paredes) draw_text(4, 4, "Estado: " + string(state));   // depuração (F1)
 
-// Aliados (esquerda)
-for (var i = 0; i < array_length(party); i++) {
-    var _u = party[i];
-    var _x = 80, _y = 96 + i * 70;                       // NOVO: sobe 4 e espaça 70
-
-    if (_u.hp > 0) {
-        if (_u.sprite != -1) {
-            var _frames = sprite_get_number(_u.sprite);
-            var _frame  = floor(current_time / 1000 * 6) mod _frames;
-            var _tint = molde_on ? merge_colour(c_white, c_gray, 0.8 * (molde / molde_max)) : c_white;
-            cyber_draw(_u.sprite, _frame, _x, _y, 1, _tint);
-        } else {
-            draw_set_color(c_aqua);
-            draw_rectangle(_x - 12, _y - 16, _x + 12, _y + 16, false);
-            draw_set_color(c_white);
-        }
-        if (_u == current) draw_text(_x - 45, _y - 8, ">");
-    }
-
-    if (_u.hp_shown > 0.5) draw_hp_bar(_x - 30, _y + 36, 70, 5, _u);        // NOVO: 28 -> 36
-    draw_text(_x - 30, _y + 43, _u.name + " HP " + string(_u.hp) + "/" + string(_u.hp_max)
-                              + "  MP " + string(_u.mp) + "/" + string(_u.mp_max));   // NOVO: 35 -> 43
-
-    var _ps = status_stacks(_u, "poison");
-    if (_ps > 0 && _u.hp > 0) {
-        draw_set_color(c_green);
-        draw_text(_x - 30, _y + 55, "VENENO x" + string(_ps));                // NOVO: 47 -> 55
+// Aliados (esquerda): a Nexa com pose animada (scr_batalha_fx)
+var _u0 = party[0];
+if (_u0.hp > 0) {
+    var _tint = molde_on ? merge_colour(c_white, c_gray, 0.8 * (molde / molde_max)) : c_white;
+    nexa_desenhar_batalha(_tint);
+    // indicador de turno: losango girando acima da cabeça
+    if (_u0 == current && (state == BATTLE_STATE.PLAYER_MENU || state == BATTLE_STATE.PLAYER_SKILL)) {
+        var _ay = NEXA_BY - 58 + sin(current_time / 200) * 3;
+        draw_set_color(c_aqua);
+        draw_triangle(NEXA_BX - 5, _ay, NEXA_BX + 5, _ay, NEXA_BX, _ay + 7, false);
         draw_set_color(c_white);
     }
+}
+var _ps = status_stacks(_u0, "poison");
+if (_ps > 0 && _u0.hp > 0) {
+    draw_set_color(make_colour_rgb(30, 60, 30));
+    draw_roundrect(NEXA_BX - 26, NEXA_BY + 48, NEXA_BX + 26, NEXA_BY + 60, false);
+    draw_set_color(c_lime);
+    draw_text_transformed(NEXA_BX - 22, NEXA_BY + 49, "VENENO x" + string(_ps), 0.7, 0.7, 0);
+    draw_set_color(c_white);
 }
 
 // Debuff do UPDATE
@@ -119,6 +110,7 @@ if (atk_debuff > 0) {
 var _alive = alive_list(enemies);
 for (var i = 0; i < array_length(enemies); i++) {
     var _e = enemies[i];
+    var _po = inimigo_pose(_e, i);   // respiração, avanço no ataque, recuo e clarão ao levar dano
 
     // ----- BOSS DADO -----
     if (_e.is_dice) {
@@ -140,15 +132,16 @@ for (var i = 0; i < array_length(enemies); i++) {
             var _col = c_white;
             if (boss_exposed)    _col = c_yellow;   // NULL: exposto
             if (boss_recharging) _col = c_gray;     // DROP TABLE: recarregando
-            draw_sprite_ext(_e.sprite, 0, _dx, _dy + _oy, _sc, _sc, _ang, _col, 1);
+            draw_sprite_ext(_e.sprite, 0, _dx + _po.x, _dy + _oy + _po.y, _sc * _po.sx, _sc * _po.sy, _ang + _po.ang, _col, 1);
+            sprite_clarao(_e.sprite, 0, _dx + _po.x, _dy + _oy + _po.y, _sc * _po.sx, _sc * _po.sy, _ang + _po.ang, _po.flash);
 
             if (boss_exposed)    { draw_set_color(c_yellow); draw_text(_dx - 28, _dy - 60, "EXPOSTO!"); }
             if (boss_recharging) { draw_set_color(c_gray);   draw_text(_dx - 40, _dy - 60, "RECARREGANDO"); }
             draw_set_color(c_white);
 
-            if (_e == current) draw_text(_dx - 50, _dy - 6, "<");
+            if (_e == current) marca_turno(_dx - 50, _dy - 6);
             if (state == BATTLE_STATE.PLAYER_TARGET && _e == _alive[target_index])
-                draw_text(_dx - 4, _dy - 56, "v");
+                seta_alvo(_dx - 4, _dy - 56);
         }
 
         if (_e.hp_shown > 0.5) draw_hp_bar(_dx - 40, _dy + 42, 80, 6, _e);
@@ -158,33 +151,34 @@ for (var i = 0; i < array_length(enemies); i++) {
 
     // ----- BOSS PYTHON (com sprite) -----
     if (variable_struct_exists(_e, "typed") && _e.sprite != -1) {
-        var _px = 370, _py = 120;
-        var _pscale = 0.6;   // tamanho do sprite (ajuste se ficar grande/pequeno)
+        var _px = 370, _py = 108;
+        var _pscale = 0.95;   // tamanho do sprite (proporcional à Nexa)
         var _tcol = global.boss_types[_e.type_index].color;
 
         if (_e.hp > 0) {
             var _pfr  = floor(current_time / 1000 * 6) mod sprite_get_number(_e.sprite);
             var _bob  = sin(current_time / 400) * 3;               // flutua parado
             var _tint = merge_colour(c_white, _tcol, 0.45);        // tinge de leve com a cor do tipo
-            draw_sprite_ext(_e.sprite, _pfr, _px, _py + _bob, _pscale, _pscale, 0, _tint, 1);
+            draw_sprite_ext(_e.sprite, _pfr, _px + _po.x, _py + _po.y, _pscale * _po.sx, _pscale * _po.sy, _po.ang * 2, _tint, 1);
+            sprite_clarao(_e.sprite, _pfr, _px + _po.x, _py + _po.y, _pscale * _po.sx, _pscale * _po.sy, _po.ang * 2, _po.flash);
 
             // cauda: um quadradinho por segmento
             draw_set_color(_tcol);
             for (var s = 0; s < _e.tail; s++) {
-                draw_rectangle(_px - 36 + s * 10, _py + 80, _px - 30 + s * 10, _py + 86, false);
+                draw_rectangle(_px - 36 + s * 10, _py - 62, _px - 30 + s * 10, _py - 57, false);   // acima da cabeça
             }
             draw_set_color(c_white);
 
-            if (_e == current) draw_text(_px - 70, _py - 6, "<");
+            if (_e == current) marca_turno(_px - 70, _py - 6);
             if (state == BATTLE_STATE.PLAYER_TARGET && _e == _alive[target_index])
-                draw_text(_px - 4, _py - 60, "v");
+                seta_alvo(_px - 4, _py - 84);
         }
 
-        if (_e.hp_shown > 0.5) draw_hp_bar(_px - 40, _py + 42, 80, 6, _e);
-        draw_text(_px - 40, _py + 50, _e.name + " " + string(_e.hp) + "/" + string(_e.hp_max));
+        if (_e.hp_shown > 0.5) draw_hp_bar(_px - 40, _py + 60, 80, 6, _e);
+        draw_text(_px - 40, _py + 68, _e.name + " " + string(_e.hp) + "/" + string(_e.hp_max));
         if (_e.hp > 0) {
             draw_set_color(_tcol);
-            draw_text(_px - 40, _py + 64, "TIPO: " + global.boss_types[_e.type_index].name);
+            draw_text(_px - 40, _py - 76, "TIPO: " + global.boss_types[_e.type_index].name);   // acima da cabeça
             draw_set_color(c_white);
         }
         continue;
@@ -198,7 +192,7 @@ for (var i = 0; i < array_length(enemies); i++) {
 
         // Urso com sprite: 160x200 a 55% do tamanho
         var _sc = 1;
-        if (_b && _e.sprite != -1) { _sc = 0.55; _uw = 88; _uh = 110; }
+        if (_b && _e.sprite != -1) { _sc = 0.65; _uw = 104; _uh = 130; }
 
         if (_e.hp > 0) {
             if (_e.sprite != -1) {
@@ -211,7 +205,8 @@ for (var i = 0; i < array_length(enemies); i++) {
                     _spr = _e.sprite_attack;
                     _fr = (state == BATTLE_STATE.DEFENSE) ? clamp(floor(def_timer / (def_hit / 3)), 0, 2) : 3;
                 }
-                draw_sprite_ext(_spr, _fr, _ux, _uy + _ubob, _sc, _sc, 0, c_white, 1);
+                draw_sprite_ext(_spr, _fr, _ux + _po.x, _uy + _po.y, _sc * _po.sx, _sc * _po.sy, _po.ang, c_white, 1);
+                sprite_clarao(_spr, _fr, _ux + _po.x, _uy + _po.y, _sc * _po.sx, _sc * _po.sy, _po.ang, _po.flash);
             } else {
                 // sem sprite ainda: retângulos de teste
                 draw_set_color(_b ? make_colour_rgb(120, 70, 30) : c_gray);
@@ -226,9 +221,9 @@ for (var i = 0; i < array_length(enemies); i++) {
                 draw_text(_ux - 22, _uy - _uh / 2 - 14, "MOLDADO");
                 draw_set_color(c_white);
             }
-            if (_e == current) draw_text(_ux - _uw / 2 - 14, _uy - 6, "<");
+            if (_e == current) marca_turno(_ux - _uw / 2 - 14, _uy - 6);
             if (state == BATTLE_STATE.PLAYER_TARGET && _e == _alive[target_index])
-                draw_text(_ux - 4, _uy - _uh / 2 - 28, "v");
+                seta_alvo(_ux - 4, _uy - _uh / 2 - 28);
         }
 
         if (_e.hp_shown > 0.5) draw_hp_bar(_ux - 28, _uy + _uh / 2 + 6, 56, 5, _e);
@@ -253,9 +248,9 @@ for (var i = 0; i < array_length(enemies); i++) {
         }
 
         draw_set_color(c_white);
-        if (_e == current) draw_text(_x - 14, _y + 8, "<");
+        if (_e == current) marca_turno(_x - 14, _y + 8);
         if (state == BATTLE_STATE.PLAYER_TARGET && _e == _alive[target_index])
-            draw_text(_x + 4, _y - 14, "v");
+            seta_alvo(_x + 4, _y - 14);
     }
 
     if (_e.hp_shown > 0.5) draw_hp_bar(_x - 20, _y + 36, 70, 5, _e);
@@ -278,82 +273,272 @@ if (roll_active && current.is_dice &&
     if (_landed) draw_text(258, 144, dice_faces[roll_result - 1].name);
 }
 
-// Menu principal
-if (state == BATTLE_STATE.PLAYER_MENU || state == BATTLE_STATE.PLAYER_SKILL) {
-    for (var i = 0; i < array_length(menu_options); i++) {
-        var _txt = menu_options[i];
-        if (i == 3) _txt += " (" + string(global.items.potion.qty) + ")";
-        if (i == menu_locked) _txt += " (APAGADA)";
+// ===== Efeitos das ações (projéteis, cortes, escudos, faíscas) =====
+fx_desenhar();
 
-        var _ready = !(i == 4 && energy < energy_max) && (i != menu_locked);
-        draw_set_color(_ready ? c_white : c_gray);
-        var _cursor = (i == menu_index) ? "> " : "  ";
-        draw_text(20, 190 + i * 16, _cursor + _txt);
-    }
-    draw_set_color(c_white);
+// ===================================================================
+//  PAINEL DE BATALHA (comandos, habilidades, status e mensagens)
+// ===================================================================
+var _pnl_y1 = 194, _pnl_y2 = 266;
+var _t_ms = current_time;
+var _menu = (state == BATTLE_STATE.PLAYER_MENU);
+var _skl  = (state == BATTLE_STATE.PLAYER_SKILL);
+var _alv  = (state == BATTLE_STATE.PLAYER_TARGET);
+menu_anim  = lerp(menu_anim, menu_index, 0.3);
+skill_anim = lerp(skill_anim, skill_index, 0.3);
+
+// fundo do painel
+draw_set_alpha(0.92);
+draw_set_color(make_colour_rgb(9, 11, 22));
+draw_roundrect(6, _pnl_y1, 474, _pnl_y2, false);
+draw_set_alpha(1);
+draw_set_color(make_colour_rgb(40, 90, 120));
+draw_roundrect(6, _pnl_y1, 474, _pnl_y2, true);
+draw_set_color(merge_colour(c_aqua, c_white, 0.5 + 0.5 * sin(_t_ms / 400)));
+draw_line(16, _pnl_y1, 120, _pnl_y1);
+
+// ----- Coluna de comandos -----
+var _cx1 = 12, _cy1 = _pnl_y1 + 6, _row = 12;
+var _cmd_desc = [
+	"Golpe com ritmo: aperte ESPAÇO no centro da barra.",
+	"Reduz o dano pela metade até o seu próximo turno.",
+	"Gasta MP. O elemento certo causa dano extra.",
+	"Poção: recupera " + string(global.items.potion.heal) + " HP.",
+	(energy >= energy_max) ? "Energia cheia! Atinge todos os inimigos com força máxima." : "Encha a energia com acertos perfeitos para liberar."
+];
+var _ativo = (_menu || _skl || _alv);
+for (var i = 0; i < array_length(menu_options); i++) {
+	var _ry = _cy1 + i * _row;
+	var _ok = !(i == 4 && energy < energy_max) && (i != menu_locked) && !(i == 3 && global.items.potion.qty <= 0);
+	var _sel = (_menu && i == menu_index);
+	// barra de seleção deslizando
+	if (_menu && i == 0) {
+		var _sy = _cy1 + menu_anim * _row;
+		draw_set_alpha(0.85);
+		draw_rectangle_colour(_cx1, _sy - 1, _cx1 + 118, _sy + _row - 1, make_colour_rgb(20, 120, 150), make_colour_rgb(10, 30, 50), make_colour_rgb(10, 30, 50), make_colour_rgb(20, 120, 150), false);
+		draw_set_alpha(1);
+		draw_set_color(c_aqua);
+		draw_rectangle(_cx1, _sy - 1, _cx1 + 1, _sy + _row - 1, false);
+	}
+	var _cor = _ok ? (_sel ? c_white : make_colour_rgb(170, 185, 205)) : make_colour_rgb(70, 75, 90);
+	if (!_ativo) _cor = make_colour_rgb(70, 75, 90);
+	icone_comando(i, _cx1 + 9 + (_sel ? 2 : 0), _ry + 5, (i == 4 && energy >= energy_max) ? merge_colour(c_orange, c_yellow, 0.5 + 0.5 * sin(_t_ms / 100)) : _cor);
+	draw_set_color(_cor);
+	var _txt = menu_options[i];
+	if (i == 3) _txt += " x" + string(global.items.potion.qty);
+	if (i == menu_locked) _txt = "APAGADA";
+	draw_text_transformed(_cx1 + 20 + (_sel ? 3 : 0), _ry, texto_seguro(_txt), 0.8, 0.8, 0);
 }
 
-// Submenu de habilidades
-if (state == BATTLE_STATE.PLAYER_SKILL) {
-    var _skills = current.skills;
-    for (var i = 0; i < array_length(_skills); i++) {
-        var _s = _skills[i];
-        var _can = (current.mp >= _s.cost);
+// divisória
+draw_set_color(make_colour_rgb(40, 70, 90));
+draw_line(136, _pnl_y1 + 6, 136, _pnl_y2 - 6);
 
-        draw_set_color(_can ? c_white : c_gray);
-        var _cursor = (i == skill_index) ? "> " : "  ";
-        var _esp = (array_length(_skills) > 4) ? 12 : 16;   // 5 habilidades: lista mais compacta
-        draw_text(140, 190 + i * _esp, _cursor + _s.name + " (" + string(_s.cost) + " MP)");
-    }
-    draw_set_color(c_white);
-}
+// ----- Área da direita -----
+var _ix = 144, _iy = _pnl_y1 + 5;
+var _eu = party[0];
 
-// Log e fim de batalha
-draw_text(160, 256, log_text);   // y=256 para não encostar no submenu de 4 skills
-if (state == BATTLE_STATE.WIN)  draw_text(190, 20, "VITORIA! (Enter)");
-if (state == BATTLE_STATE.LOSE) draw_text(190, 20, "DERROTA... (Enter)");
-
-// Barra de energia e combo
-var _ex = 300, _ey = 8, _ew = 170, _eh = 8;
-draw_set_color(c_dkgray);
-draw_rectangle(_ex, _ey, _ex + _ew, _ey + _eh, false);
-draw_set_color(energy >= energy_max ? c_orange : c_aqua);
-draw_rectangle(_ex, _ey, _ex + _ew * (energy / energy_max), _ey + _eh, false);
+// status da Nexa (sempre visível)
+draw_set_color(c_aqua);
+draw_text_transformed(_ix, _iy, "NEXA", 0.8, 0.8, 0);
 draw_set_color(c_white);
-draw_rectangle(_ex, _ey, _ex + _ew, _ey + _eh, true);
-draw_text(_ex, _ey + 12, "Combo x" + string(combo));
-if (energy >= energy_max) draw_text(_ex, _ey + 28, "ESPECIAL PRONTO!");
+draw_text_transformed(_ix + 38, _iy + 1, "HP", 0.6, 0.6, 0);
+draw_hp_bar(_ix + 52, _iy + 3, 90, 5, _eu);
+draw_text_transformed(_ix + 146, _iy + 1, string(_eu.hp) + "/" + string(_eu.hp_max), 0.6, 0.6, 0);
+draw_text_transformed(_ix + 192, _iy + 1, "MP", 0.6, 0.6, 0);
+draw_set_color(make_colour_rgb(30, 30, 60));
+draw_rectangle(_ix + 206, _iy + 3, _ix + 266, _iy + 8, false);
+draw_set_color(make_colour_rgb(110, 140, 255));
+draw_rectangle(_ix + 206, _iy + 3, _ix + 206 + 60 * (_eu.mp / max(1, _eu.mp_max)), _iy + 8, false);
+draw_set_color(c_white);
+draw_text_transformed(_ix + 270, _iy + 1, string(_eu.mp) + "/" + string(_eu.mp_max), 0.6, 0.6, 0);
+if (atk_debuff > 0) {
+	draw_set_color(c_red);
+	draw_text_transformed(_ix + 300, _iy + 1, "ATK-30%", 0.6, 0.6, 0);
+}
+draw_set_color(make_colour_rgb(40, 70, 90));
+draw_line(_ix, _iy + 13, 466, _iy + 13);
 
-// Barra de timing (ataque)
-if (state == BATTLE_STATE.PLAYER_TIMING) {
-    var _bx = 120, _by = 130, _bw = 240, _bh = 12;
-
-    draw_set_color(c_maroon);
-    draw_rectangle(_bx, _by, _bx + _bw, _by + _bh, false);
-    draw_set_color(c_yellow);
-    draw_rectangle(_bx + _bw * 0.35, _by, _bx + _bw * 0.65, _by + _bh, false);
-    draw_set_color(c_lime);
-    draw_rectangle(_bx + _bw * 0.45, _by, _bx + _bw * 0.55, _by + _bh, false);
-
-    draw_set_color(c_white);
-    var _cx = _bx + _bw * timing_pos;
-    draw_rectangle(_cx - 1, _by - 4, _cx + 1, _by + _bh + 4, false);
-    draw_text(_bx, _by - 24, "ESPACO para atacar na zona verde!");
+var _dy = _iy + 18;
+if (_menu) {
+	// descrição do comando escolhido
+	draw_set_color(c_yellow);
+	draw_text_transformed(_ix, _dy, texto_seguro(menu_options[menu_index]), 0.9, 0.9, 0);
+	draw_set_color(make_colour_rgb(200, 205, 220));
+	draw_text_ext_transformed(_ix, _dy + 13, texto_seguro((menu_index == menu_locked) ? "Apagada pelo DROP COLUMN neste turno." : _cmd_desc[menu_index]), 14, 380, 0.75, 0.75, 0);
+	draw_set_color(c_gray);
+	draw_text_transformed(_ix, _pnl_y2 - 12, texto_seguro("[Cima/Baixo] escolher   [Enter] confirmar"), 0.6, 0.6, 0);
+}
+else if (_skl) {
+	// lista de habilidades (esquerda) + detalhes (direita)
+	var _skills = current.skills;
+	var _n = array_length(_skills);
+	var _srow = (_n > 4) ? 9 : 10;
+	var _sy2 = _dy - 1 + skill_anim * _srow;
+	draw_set_alpha(0.8);
+	draw_rectangle_colour(_ix, _sy2, _ix + 150, _sy2 + _srow, make_colour_rgb(20, 120, 150), make_colour_rgb(10, 30, 50), make_colour_rgb(10, 30, 50), make_colour_rgb(20, 120, 150), false);
+	draw_set_alpha(1);
+	for (var i = 0; i < _n; i++) {
+		var _s = _skills[i];
+		var _can = (current.mp >= _s.cost);
+		draw_set_color(_s.heal ? c_lime : cor_elemento(_s.element));
+		draw_circle(_ix + 5, _dy + i * _srow + 4, 3, false);
+		draw_set_color(_can ? ((i == skill_index) ? c_white : make_colour_rgb(170, 185, 205)) : make_colour_rgb(80, 80, 95));
+		draw_text_transformed(_ix + 12, _dy + i * _srow, texto_seguro(_s.name), 0.7, 0.7, 0);
+		draw_set_halign(fa_right);
+		draw_text_transformed(_ix + 148, _dy + i * _srow, string(_s.cost) + " MP", 0.65, 0.65, 0);
+		draw_set_halign(fa_left);
+	}
+	var _ss = _skills[skill_index];
+	var _dx2 = _ix + 160;
+	var _ecor = _ss.heal ? c_lime : cor_elemento(_ss.element);
+	draw_set_color(_ecor);
+	draw_roundrect(_dx2, _dy, _dx2 + 160, _dy + 12, false);
+	draw_set_color(c_black);
+	var _enome = _ss.heal ? "CURA" : ((_ss.element == "lightning") ? "RAIO" : ((_ss.element == "fire") ? "FOGO" : "GELO"));
+	draw_text_transformed(_dx2 + 4, _dy + 1, _enome, 0.7, 0.7, 0);
+	draw_set_color(c_white);
+	draw_text_transformed(_dx2, _dy + 16, (_ss.heal ? "Cura " : "Poder ") + string(_ss.power) + "   Custo " + string(_ss.cost) + " MP", 0.7, 0.7, 0);
+	// quem é fraco a este elemento?
+	var _fraco = "";
+	if (!_ss.heal) for (var k = 0; k < array_length(enemies); k++) if (enemies[k].hp > 0 && enemies[k].weak_to == _ss.element) _fraco = enemies[k].name;
+	draw_set_color((_fraco != "") ? c_yellow : c_gray);
+	draw_text_transformed(_dx2, _dy + 28, texto_seguro((_fraco != "") ? ("Eficaz contra " + _fraco + "!") : (_ss.heal ? "Recupera HP da Nexa." : "Ninguém aqui é fraco a isso.")), 0.65, 0.65, 0);
+	draw_set_color(c_gray);
+	draw_text_transformed(_ix, _pnl_y2 - 12, texto_seguro("[Enter] usar   [Esc] voltar"), 0.6, 0.6, 0);
+}
+else if (_alv) {
+	var _al = alive_list(enemies);
+	alvo_anim = lerp(alvo_anim, target_index, 0.3);
+	draw_set_color(c_yellow);
+	draw_text_transformed(_ix, _dy, "ESCOLHA O ALVO", 0.9, 0.9, 0);
+	if (array_length(_al) > 0) {
+		var _tg = _al[clamp(target_index, 0, array_length(_al) - 1)];
+		draw_set_color(c_white);
+		draw_text_transformed(_ix, _dy + 14, texto_seguro(_tg.name + "  HP " + string(_tg.hp) + "/" + string(_tg.hp_max)), 0.8, 0.8, 0);
+	}
+	draw_set_color(c_gray);
+	draw_text_transformed(_ix, _pnl_y2 - 12, texto_seguro("[Esq/Dir] trocar   [Enter] confirmar   [Esc] voltar"), 0.6, 0.6, 0);
+}
+else {
+	// mensagens da luta
+	draw_set_color(c_white);
+	draw_text_ext_transformed(_ix, _dy + 2, texto_seguro(log_text), 14, 380, 0.85, 0.85, 0);
+	if (state == BATTLE_STATE.WIN || state == BATTLE_STATE.LOSE) {
+		draw_set_alpha(0.5 + 0.5 * sin(_t_ms / 150));
+		draw_set_color((state == BATTLE_STATE.WIN) ? c_lime : c_red);
+		draw_text_transformed(_ix, _pnl_y2 - 13, (state == BATTLE_STATE.WIN) ? "VITORIA!  [Enter]" : "DERROTA...  [Enter]", 0.8, 0.8, 0);
+		draw_set_alpha(1);
+	}
+}
+// mensagem curta acima do painel durante os menus
+if ((_menu || _skl || _alv) && log_text != "") {
+	var _lt = texto_seguro(log_text);
+	var _lw = min(440, string_width(_lt) * 0.75 + 16);
+	draw_set_alpha(0.7);
+	draw_set_color(c_black);
+	draw_roundrect(240 - _lw / 2, 178, 240 + _lw / 2, 191, false);
+	draw_set_alpha(1);
+	draw_set_color(make_colour_rgb(210, 215, 228));
+	draw_set_halign(fa_center);
+	draw_text_transformed(240, 179, _lt, 0.75, 0.75, 0);
+	draw_set_halign(fa_left);
 }
 
-// Defesa ativa (anel que fecha)
+// ----- Energia e combo (topo direito) -----
+var _ex = 300, _ey = 6, _seg = 10, _sw = 15;
+var _cheia = energy >= energy_max;
+draw_set_alpha(0.8);
+draw_set_color(make_colour_rgb(9, 11, 22));
+draw_roundrect(_ex - 4, _ey - 2, 476, _ey + 26, false);
+draw_set_alpha(1);
+draw_set_color(_cheia ? c_orange : c_aqua);
+draw_text_transformed(_ex, _ey, "ENERGIA", 0.6, 0.6, 0);
+for (var s = 0; s < _seg; s++) {
+	var _sx = _ex + 44 + s * (_sw + 2);
+	var _fill = clamp(energy / energy_max * _seg - s, 0, 1);
+	draw_set_color(make_colour_rgb(25, 35, 50));
+	draw_rectangle(_sx, _ey + 1, _sx + _sw, _ey + 7, false);
+	if (_fill > 0) {
+		draw_set_color(_cheia ? merge_colour(c_orange, c_yellow, 0.5 + 0.5 * sin(_t_ms / 90 + s)) : c_aqua);
+		draw_rectangle(_sx, _ey + 1, _sx + _sw * _fill, _ey + 7, false);
+	}
+}
+draw_set_color(merge_colour(c_white, c_orange, min(1, combo / 5)));
+draw_text_transformed(_ex, _ey + 12, "COMBO x" + string(combo), 0.7, 0.7, 0);
+if (_cheia) {
+	draw_set_alpha(0.5 + 0.5 * sin(_t_ms / 120));
+	draw_set_color(c_yellow);
+	draw_set_halign(fa_right);
+	draw_text_transformed(472, _ey + 12, "ESPECIAL PRONTO!", 0.7, 0.7, 0);
+	draw_set_halign(fa_left);
+	draw_set_alpha(1);
+}
+
+// ----- Barra de ritmo (ataque) -----
+if (state == BATTLE_STATE.PLAYER_TIMING && acao.tipo == "") {
+	var _bx = 110, _by = 140, _bw = 260, _bh = 12;
+	draw_set_alpha(0.85);
+	draw_set_color(make_colour_rgb(9, 11, 22));
+	draw_roundrect(_bx - 10, _by - 22, _bx + _bw + 10, _by + _bh + 10, false);
+	draw_set_alpha(1);
+	draw_rectangle_colour(_bx, _by, _bx + _bw * 0.5, _by + _bh, make_colour_rgb(110, 20, 30), make_colour_rgb(230, 200, 40), make_colour_rgb(230, 200, 40), make_colour_rgb(110, 20, 30), false);
+	draw_rectangle_colour(_bx + _bw * 0.5, _by, _bx + _bw, _by + _bh, make_colour_rgb(230, 200, 40), make_colour_rgb(110, 20, 30), make_colour_rgb(110, 20, 30), make_colour_rgb(230, 200, 40), false);
+	draw_set_color(c_lime);
+	draw_rectangle(_bx + _bw * 0.45, _by, _bx + _bw * 0.55, _by + _bh, false);
+	draw_set_color(c_white);
+	draw_rectangle(_bx, _by, _bx + _bw, _by + _bh, true);
+	// cursor brilhante com rastro
+	var _cx = _bx + _bw * timing_pos;
+	for (var k = 1; k <= 4; k++) {
+		draw_set_alpha(0.25 / k);
+		draw_rectangle(_cx - timing_dir * k * 4 - 1, _by - 2, _cx - timing_dir * k * 4 + 1, _by + _bh + 2, false);
+	}
+	draw_set_alpha(1);
+	draw_triangle(_cx - 5, _by - 7, _cx + 5, _by - 7, _cx, _by - 1, false);
+	draw_triangle(_cx - 5, _by + _bh + 7, _cx + 5, _by + _bh + 7, _cx, _by + _bh + 1, false);
+	draw_rectangle(_cx - 1, _by - 2, _cx + 1, _by + _bh + 2, false);
+	draw_set_halign(fa_center);
+	draw_set_color(c_yellow);
+	draw_text_transformed(240, _by - 19, texto_seguro("ESPAÇO no centro!"), 0.75, 0.75, 0);
+	draw_set_halign(fa_left);
+}
+
+// ----- Defesa ativa: anel que fecha sobre a Nexa -----
 if (state == BATTLE_STATE.DEFENSE) {
-    var _t = clamp(def_timer / def_hit, 0, 1);
-    var _r = lerp(48, 14, _t);
-    var _in_window = abs(def_timer - def_hit) <= def_good;
+	var _t = clamp(def_timer / def_hit, 0, 1);
+	var _r = lerp(56, 18, _t);
+	var _jan = abs(def_timer - def_hit) <= def_good + cyber_total("def_window");
+	draw_set_color(c_white);
+	draw_circle(def_x, def_y, 18, true);
+	draw_set_color(_jan ? c_lime : c_yellow);
+	draw_circle(def_x, def_y, _r, true);
+	draw_circle(def_x, def_y, _r + 1, true);
+	draw_set_alpha(0.15);
+	draw_circle(def_x, def_y, _r, false);
+	draw_set_alpha(0.5 + 0.5 * sin(current_time / 80));
+	draw_set_halign(fa_center);
+	draw_set_color(_jan ? c_lime : c_yellow);
+	draw_text_transformed(def_x, def_y - 66, texto_seguro("DEFENDA! [ESPAÇO]"), 0.8, 0.8, 0);
+	draw_set_halign(fa_left);
+	draw_set_alpha(1);
+	draw_set_color(c_white);
+}
 
-    draw_set_color(c_white);
-    draw_circle(def_x, def_y, 14, true);
-    draw_set_color(_in_window ? c_lime : c_yellow);
-    draw_circle(def_x, def_y, _r, true);
-
-    draw_set_color(c_white);
-    draw_text(150, 130, "DEFENDA! (ESPACO)");
+// ----- Golpe especial: escurece a tela e dá um clarão no impacto -----
+if (especial_escuro > 0) {
+	draw_set_alpha(0.45 * especial_escuro);
+	draw_set_color(c_black);
+	draw_rectangle(0, 0, 480, 270, false);
+	draw_set_alpha(1);
+	nexa_desenhar_batalha(c_white);   // a Nexa fica por cima do escuro
+	fx_desenhar();
+}
+if (especial_clarao > 0) {
+	draw_set_alpha(especial_clarao * 0.8);
+	draw_set_color(c_white);
+	draw_rectangle(0, 0, 480, 270, false);
+	draw_set_alpha(1);
 }
 
 // Números flutuantes
@@ -461,13 +646,13 @@ if (dica != "") {
 	draw_set_alpha(0.55 * _a);
 	draw_set_color(c_black);
 	draw_rectangle(0, 0, 480, 270, false);
-	var _py = 60 + 16 * (1 - _a);
+	var _py = 40 + 16 * (1 - _a);
 	draw_set_alpha(0.95 * _a);
 	draw_set_color(make_colour_rgb(10, 14, 28));
-	draw_roundrect(70, _py, 410, _py + 120, false);
+	draw_roundrect(70, _py, 410, _py + 150, false);
 	draw_set_alpha(_a);
 	draw_set_color(c_aqua);
-	draw_roundrect(70, _py, 410, _py + 120, true);
+	draw_roundrect(70, _py, 410, _py + 150, true);
 	draw_text_transformed(82, _py + 6, "DICA DE BATALHA", 0.7, 0.7, 0);
 	draw_set_color(c_yellow);
 	draw_text(82, _py + 18, texto_seguro(_d[0]));
@@ -481,7 +666,7 @@ if (dica != "") {
 		draw_set_alpha(_a * (0.5 + 0.5 * sin(current_time / 150)));
 		draw_set_color(c_ltgray);
 		draw_set_halign(fa_right);
-		draw_text(402, _py + 104, "[ENTER] entendi");
+		draw_text(402, _py + 134, "[ENTER] entendi");
 		draw_set_halign(fa_left);
 	}
 	draw_set_alpha(1);

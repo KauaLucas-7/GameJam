@@ -32,3 +32,9 @@ iniciar_card = function(_sala) {
 // Abertura do jogo: card da primeira sala
 abertura = true;
 iniciar_card(room);
+// Web: o foco vem do clique em "Clique para começar" (obj_menu), não da janela
+if (eh_web()) abertura = false;
+
+// Web: tamanho da aba do navegador (para encaixar o jogo nela)
+web_w = -1;
+web_h = -1;

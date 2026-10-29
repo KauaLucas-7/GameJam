@@ -23,17 +23,23 @@ if (dica != "") {
 	exit;
 }
 
+// ===== ANIMAÇÕES DA NEXA E EFEITOS (scr_batalha_fx) =====
+fx_atualizar();
+especial_clarao = max(0, especial_clarao - 0.06);
+
 // ===== EFEITOS VISUAIS =====
 
 // 1) Detecta mudança de HP -> número flutuante + tremor
 for (var i = 0; i < array_length(turn_order); i++) {
     var _u = turn_order[i];
+    if (variable_struct_exists(_u, "hurt") && _u.hurt > 0) _u.hurt--;
 
     if (_u.hp != _u.hp_prev) {
         var _diff = _u.hp - _u.hp_prev;
         var _pos = get_unit_pos(_u);
 
         if (_diff < 0) {
+            _u.hurt = 14;   // pisca e recua (inimigo_pose / nexa_pose)
             add_popup(_pos.x, _pos.y - 30, string(-_diff), _u.is_player ? c_red : c_yellow);
             if (_u.is_player) start_shake(clamp(-_diff / _u.hp_max * 25, 3, 10), 18);
             else              start_shake(2, 8);
@@ -103,11 +109,13 @@ switch (state) {
                     state = BATTLE_STATE.PLAYER_TARGET
                     break;
 
-                case 1: // Defender
+                case 1: // Defender (animação: escudo hexagonal)
                     current.defending = true;
-					chosen_action = "defend";   
+					chosen_action = "defend";
                     log_text = current.name + " se defende.";
-                    state = BATTLE_STATE.CHECK_END;
+                    iniciar_acao("defesa", 28);
+                    timer = 26;
+                    state = BATTLE_STATE.EXECUTE_ACTION;
                     break;
 
                 case 2: // Habilidade
@@ -120,6 +128,7 @@ switch (state) {
                     if (use_item(current, _potion)) {
 						chosen_action = "item";   
                         log_text = current.name + " usou " + _potion.name + " (+" + string(_potion.heal) + " HP).";
+                        iniciar_acao("item", 40);   // frasco subindo + brilho de cura
                         timer = 45;
                         state = BATTLE_STATE.EXECUTE_ACTION;
                     } else {
@@ -130,13 +139,11 @@ switch (state) {
                 case 4: // Especial (só com a energia cheia)
                     if (energy >= energy_max) {
 						 chosen_action = "special";   // NOVO
-                        var _targets = alive_list(enemies);
-                        for (var i = 0; i < array_length(_targets); i++) {
-                            deal_damage(current, _targets[i], 2.5, "");
-                        }
-                        log_text = current.name + " usou o GOLPE ESPECIAL!";
+                        // aura + giro; o dano em todos sai no impacto (aplicar_impacto)
+                        log_text = current.name + " concentra toda a energia...";
+                        iniciar_acao("especial", 60, undefined, "none", { tipo: "especial" });
                         energy = 0;
-                        timer = 45;
+                        timer = 66;
                         state = BATTLE_STATE.EXECUTE_ACTION;
                     } else {
                         log_text = "Energia insuficiente!";
@@ -166,7 +173,8 @@ switch (state) {
                 if (_s.heal) {
                     use_skill(current, _s, current);
                     log_text = current.name + " usou " + _s.name + " (+" + string(_s.power) + " HP).";
-                    timer = 30;
+                    iniciar_acao("cura", 34, undefined, (_s.name == "Autoconfianca") ? "lightning" : "none");
+                    timer = 36;
                     state = BATTLE_STATE.EXECUTE_ACTION;
                 } else {
                     target_index = 0;
@@ -197,9 +205,11 @@ switch (state) {
                 state = BATTLE_STATE.PLAYER_TIMING
             }
             else if (chosen_action == "skill") {
-                if (use_skill(current, chosen_skill, _target)) {
+                if (current.mp >= chosen_skill.cost) {
+                    // o projétil sai da Nexa; o dano e o gasto de MP acontecem no impacto
                     log_text = current.name + " usou " + chosen_skill.name + " em " + _target.name + "!";
-					timer = 30;
+                    iniciar_acao("habilidade", 40, _target, chosen_skill.element, { tipo: "habilidade", skill: chosen_skill, alvo: _target });
+					timer = 44;
                     state = BATTLE_STATE.EXECUTE_ACTION;
                 } else {
                     log_text = "Sem MP!";
@@ -229,16 +239,15 @@ switch (state) {
             var _expo = boss_exposed;
             if (_expo) { _bonus *= 2; boss_exposed = false; }   // NULL: dobra uma vez e consome
 
-            if (is_worker(chosen_target) && last_result == "perfect") {
-                // Funcionário moldado + timing perfeito: é libertado
-                free_worker(chosen_target);
-            } else {
-                deal_damage(current, chosen_target, _mult * _bonus, "");
-                if (_expo) log_text = "EXPOSTO x2! " + log_text;
-            }
-            log_text = _rating + " " + log_text;
+            // A Nexa avança e corta; o dano sai quando a lâmina acerta (aplicar_impacto).
+            // Funcionário moldado + timing perfeito: é libertado em vez de levar dano.
+            iniciar_acao("ataque", 34, chosen_target, "none", {
+                tipo: "ataque", alvo: chosen_target, mult: _mult * _bonus, expo: _expo, rating: _rating,
+                liberta: (is_worker(chosen_target) && last_result == "perfect")
+            });
+            log_text = "...";
 
-            timer = 30;
+            timer = 36;
             state = BATTLE_STATE.EXECUTE_ACTION;
         }
 
@@ -397,6 +406,9 @@ switch (state) {
                 // Perfeita: bloqueia tudo
                 log_text = (_fw ? "FIREWALL! " : "DEFESA PERFEITA! ") + def_victim.name + " bloqueou o golpe.";
                 add_popup(def_x, def_y - 30, _fw ? "FIREWALL!" : "BLOQUEOU!", c_aqua);
+                fx_add({ tipo: "escudo", x: NEXA_BX, y: NEXA_BY - 4, vida: 24, max: 24, cor: _fw ? c_orange : c_aqua, r: 40 });
+                fx_faiscas(NEXA_BX + 24, NEXA_BY - 6, 16, c_aqua, 3.5);
+                start_shake(2, 6);
                 _res = "perfect";
                 if (_is_boss) log_text += boss_on_block(current);
             }
@@ -412,6 +424,7 @@ switch (state) {
                     def_victim.defending = _was;
                 }
                 log_text = "Defesa boa! " + log_text;
+                fx_add({ tipo: "escudo", x: NEXA_BX, y: NEXA_BY - 4, vida: 18, max: 18, cor: c_yellow, r: 30 });
                 _res = "good";
                 if (_is_boss) log_text += boss_on_hit(current, def_victim);
             }

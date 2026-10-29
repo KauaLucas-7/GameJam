@@ -30,7 +30,7 @@ if (keyboard_check_pressed(vk_space) || keyboard_check_pressed(vk_enter) || mous
 			if (acao == "luta" && sala != -1) trocar_sala(sala, "batalha");
 			if (acao == "final") trocar_sala(rm_final, "fade");
 			if (acao == "creditos") iniciar_dialogo("creditos", "fim", -1);
-			if (acao == "fim") game_end();
+			if (acao == "fim") { if (eh_web()) game_restart(); else game_end(); }
 			instance_destroy();
 		}
 	}

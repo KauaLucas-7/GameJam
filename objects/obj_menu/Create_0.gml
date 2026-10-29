@@ -8,9 +8,13 @@ garantir_controle();
 cyber_init();
 
 tela = "aviso";   // aviso de conteúdo sensível antes do menu
+// Navegador: o jogo só recebe o teclado depois de um clique na página,
+// então começa com "Clique para começar".
+if (eh_web()) tela = "clique";
 t = 0;
 anim = 0;
 opcoes = ["Novo jogo", "Como jogar", "Créditos", "Sair"];
+if (eh_web()) array_delete(opcoes, 3, 1);   // no navegador não existe "fechar o jogo"
 sel = 0;
 sel_anim = 0;   // barra de seleção deslizando
 fundos = [spr_sala_bd, spr_sala_python, spr_sala_urso];

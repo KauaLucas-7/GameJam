@@ -11,6 +11,10 @@ var _volta = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(vk_back
 
 switch (tela) {
 
+	case "clique":   // só na versão web
+		if (mouse_check_button_pressed(mb_left) || keyboard_check_pressed(vk_anykey)) { tela = "aviso"; t = 0; }
+		break;
+
 	case "aviso":
 		if (_ok && t > 45) { tela = "titulo"; t = 0; }
 		break;

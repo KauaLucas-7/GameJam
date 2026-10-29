@@ -5,8 +5,8 @@ if (instance_exists(obj_dialogo) || em_transicao()) {
 	exit;
 }
 
-if (keyboard_check_pressed(vk_f1))  global.ver_paredes = !global.ver_paredes;   // teste das paredes
-if (keyboard_check_pressed(vk_tab)) { diario_aberto = !diario_aberto; diario_sel = 0; marcar("tut_diario"); }
+if (!eh_web() && keyboard_check_pressed(vk_f1)) global.ver_paredes = !global.ver_paredes;   // teste das paredes (no navegador o F1 abre a ajuda)
+if (tecla_missoes()) { diario_aberto = !diario_aberto; diario_sel = 0; marcar("tut_diario"); }   // Q, M ou TAB
 
 // Diário aberto: cima/baixo escolhe a missão; a Nexa fica parada
 if (diario_aberto) {

@@ -1,7 +1,7 @@
 function make_urso() {
     var _u = make_unit("Urso", 120, 0, 11, 3, 6, false);
     _u.is_urso = true;
-    _u.pos = { x: 380, y: 115 };   // posição na tela (Draw e números de dano)
+    _u.pos = { x: 380, y: 92 };   // posição na tela (Draw e números de dano)
     return _u;
 }
 
