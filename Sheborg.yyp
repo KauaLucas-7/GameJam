@@ -30,6 +30,7 @@
     {"id":{"name":"obj_Nexa","path":"objects/obj_Nexa/obj_Nexa.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"scr_boss_python","path":"scripts/scr_boss_python/scr_boss_python.yy",},},
+    {"id":{"name":"scr_boss_urso","path":"scripts/scr_boss_urso/scr_boss_urso.yy",},},
     {"id":{"name":"scr_skills","path":"scripts/scr_skills/scr_skills.yy",},},
     {"id":{"name":"scr_status","path":"scripts/scr_status/scr_status.yy",},},
     {"id":{"name":"scr_units","path":"scripts/scr_units/scr_units.yy",},},

@@ -13,7 +13,8 @@ for (var i = 0; i < array_length(party); i++) {
         if (_u.sprite != -1) {
             var _frames = sprite_get_number(_u.sprite);
             var _frame  = floor(current_time / 1000 * 6) mod _frames;
-            draw_sprite(_u.sprite, _frame, _x, _y);
+            var _tint = molde_on ? merge_colour(c_white, c_gray, 0.8 * (molde / molde_max)) : c_white;
+            draw_sprite_ext(_u.sprite, _frame, _x, _y, 1, 1, 0, _tint, 1);
         } else {
             draw_set_color(c_aqua);
             draw_rectangle(_x - 12, _y - 16, _x + 12, _y + 16, false);
@@ -114,6 +115,39 @@ for (var i = 0; i < array_length(enemies); i++) {
             draw_text(_px - 40, _py + 64, "TIPO: " + global.boss_types[_e.type_index].name);
             draw_set_color(c_white);
         }
+        continue;
+    }
+	    // ----- BOSS URSO e FUNCIONARIOS MOLDADOS -----
+    if (is_urso(_e) || is_worker(_e)) {
+        var _b = is_urso(_e);
+        var _ux = _e.pos.x, _uy = _e.pos.y;
+        var _uw = _b ? 56 : 22, _uh = _b ? 72 : 30;
+        var _ubob = sin(current_time / 400 + i) * (_b ? 2 : 1);
+
+        if (_e.hp > 0) {
+            if (_e.sprite != -1) {
+                draw_sprite_ext(_e.sprite, 0, _ux, _uy + _ubob, 1, 1, 0, c_white, 1);
+            } else {
+                // sem sprite ainda: retângulos de teste
+                draw_set_color(_b ? make_colour_rgb(120, 70, 30) : c_gray);
+                draw_rectangle(_ux - _uw / 2, _uy - _uh / 2 + _ubob, _ux + _uw / 2, _uy + _uh / 2 + _ubob, false);
+                draw_set_color(_b ? c_red : c_aqua);   // "olhos"
+                draw_rectangle(_ux - _uw / 4 - 2, _uy - _uh / 4 + _ubob, _ux - _uw / 4 + 2, _uy - _uh / 4 + 4 + _ubob, false);
+                draw_rectangle(_ux + _uw / 4 - 2, _uy - _uh / 4 + _ubob, _ux + _uw / 4 + 2, _uy - _uh / 4 + 4 + _ubob, false);
+                draw_set_color(c_white);
+            }
+            if (!_b) {
+                draw_set_color(c_gray);
+                draw_text(_ux - 22, _uy - _uh / 2 - 14, "MOLDADO");
+                draw_set_color(c_white);
+            }
+            if (_e == current) draw_text(_ux - _uw / 2 - 14, _uy - 6, "<");
+            if (state == BATTLE_STATE.PLAYER_TARGET && _e == _alive[target_index])
+                draw_text(_ux - 4, _uy - _uh / 2 - 28, "v");
+        }
+
+        if (_e.hp_shown > 0.5) draw_hp_bar(_ux - 28, _uy + _uh / 2 + 6, 56, 5, _e);
+        if (_e.hp > 0) draw_text(_ux - 28, _uy + _uh / 2 + 14, _e.name + " " + string(_e.hp) + "/" + string(_e.hp_max));
         continue;
     }
 
@@ -254,5 +288,85 @@ draw_set_alpha(1);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
 draw_set_color(c_white);
+// ===== 3o ANDAR: MOLDE, PROPOSTA E CENAS =====
+if (molde_on) {
+    // Barra de Molde (o oposto da energia)
+    var _mx = 110, _my = 8, _mw = 170, _mh = 8;
+    var _mf = molde / molde_max;
+    draw_set_color(c_dkgray);
+    draw_rectangle(_mx, _my, _mx + _mw, _my + _mh, false);
+    draw_set_color(_mf > 0.7 ? c_red : (_mf > 0.4 ? c_fuchsia : c_purple));
+    draw_rectangle(_mx, _my, _mx + _mw * _mf, _my + _mh, false);
+    draw_set_color(c_white);
+    draw_rectangle(_mx, _my, _mx + _mw, _my + _mh, true);
+    draw_text(_mx, _my + 12, "MOLDE " + string(floor(molde)) + "/" + string(molde_max));
+    if (_mf > 0.7 && ((current_time div 300) mod 2) == 0) {
+        draw_set_color(c_red);
+        draw_text(_mx, _my + 28, "VOCE ESTA SENDO MOLDADA!");
+        draw_set_color(c_white);
+    }
+    if (fase_final) {
+        draw_set_color(c_red);
+        draw_text(_mx + 120, _my + 12, "FASE FINAL");
+        draw_set_color(c_white);
+    }
 
+    // A Proposta (menu Aceitar / Recusar)
+    if (state == BATTLE_STATE.PROPOSAL) {
+        draw_set_alpha(0.8);
+        draw_set_color(c_black);
+        draw_rectangle(80, 70, 400, 190, false);
+        draw_set_alpha(1);
+        draw_set_color(c_white);
+        draw_rectangle(80, 70, 400, 190, true);
+        draw_set_halign(fa_center);
+        draw_text(240, 84, "URSO: Minha proposta vai ser aceita?");
+        draw_text(240, 106, "Venha para a equipe. Pare de lutar.");
+        draw_set_color(proposal_index == 0 ? c_yellow : c_white);
+        draw_text(240, 142, (proposal_index == 0 ? "> " : "  ") + "Aceitar");
+        draw_set_color(proposal_index == 1 ? c_yellow : c_white);
+        draw_text(240, 162, (proposal_index == 1 ? "> " : "  ") + "Recusar");
+        draw_set_halign(fa_left);
+        draw_set_color(c_white);
+    }
+
+    // Cenas: derrota por Molde, final ruim e final bom
+    var _scene = undefined;
+    if (state == BATTLE_STATE.MOLD_END) {
+        _scene = [ "O molde se fecha ao redor de Nexa.",
+                   "Os circuitos se alinham. As cores se apagam.",
+                   "Nexa se molda. Mais uma robo na linha de producao.",
+                   "FIM DE JOGO (Enter para tentar de novo)" ];
+    } else if (state == BATTLE_STATE.ENDING_BAD) {
+        _scene = [ "Nexa aceita a proposta.",
+                   "O Urso sorri. A empresa ganha mais uma peca.",
+                   "Ninguem foi libertado. Todos continuam moldados.",
+                   "FINAL RUIM (Enter para tentar de novo)" ];
+    } else if (state == BATTLE_STATE.WIN) {
+        var _names = "";
+        for (var f = 0; f < array_length(freed_names); f++) _names += ((f > 0) ? ", " : "") + freed_names[f];
+        _scene = [ "O Urso cai. O molde se quebra.",
+                   "Os robos voltam ao normal.",
+                   (freed_count > 0) ? ("Libertados por voce: " + _names) : "Ninguem pode agradecer a tempo...",
+                   "VITORIA! (Enter)" ];
+    }
+
+    if (!is_undefined(_scene)) {
+        draw_set_alpha(min(0.88, scene_timer / 60));
+        draw_set_color(c_black);
+        draw_rectangle(0, 0, 480, 270, false);
+        draw_set_alpha(1);
+        if (state != BATTLE_STATE.WIN && party[0].sprite != -1)
+            draw_sprite_ext(party[0].sprite, 0, 240, 70, 2, 2, 0, c_gray, 1);   // Nexa apagada
+        draw_set_halign(fa_center);
+        for (var k = 0; k < array_length(_scene); k++) {
+            if (scene_timer > 60 + k * 90) {
+                draw_set_color((k == array_length(_scene) - 1) ? c_yellow : c_white);
+                draw_text(240, 130 + k * 20, _scene[k]);
+            }
+        }
+        draw_set_halign(fa_left);
+        draw_set_color(c_white);
+    }
+}
 matrix_set(matrix_world, matrix_build_identity());

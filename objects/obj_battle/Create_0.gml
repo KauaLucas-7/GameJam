@@ -1,12 +1,13 @@
 display_set_gui_size(480, 270);
 
 enum BATTLE_STATE { START, PLAYER_MENU, PLAYER_SKILL, PLAYER_TARGET, PLAYER_TIMING,
-	 EXECUTE_ACTION, ENEMY_TURN, ROLL, DEFENSE, CHECK_END, WIN, LOSE }
+	 EXECUTE_ACTION, ENEMY_TURN, ROLL, DEFENSE, CHECK_END, PROPOSAL, MOLD_END, ENDING_BAD, WIN, LOSE }
 
 state = BATTLE_STATE.START;
 
 // JUNTADO: andar atual (1 = boss Dado, 2 = boss Python, outro = inimigos normais)
-if (!variable_global_exists("andar")) global.andar = 2;   // mude para 2 para testar o Python
+urso = undefined; 
+if (!variable_global_exists("andar")) global.andar =  3;   // mude para 2 para testar o Python
 
 // --- Skills e itens (recriados a cada batalha) ---
 global.skills = {
@@ -47,6 +48,13 @@ else if (global.andar == 2) {
 	_python.sprite = spr_python;
     boss_init(_python);
     enemies = [ _python ];
+}
+else if (global.andar == 3) {
+    // ----- Andar 3: o Chefe (urso) -----
+    var _urso = make_urso();
+    // _urso.sprite = spr_Urso;   // quando tiver o sprite (origem Middle Centre), tire o //
+    urso = _urso;
+    enemies = [ _urso ];
 }
 else {
     // ----- Qualquer outro valor: inimigos normais -----
@@ -138,6 +146,7 @@ for (var i = 0; i < array_length(turn_order); i++) {
 }
 
 get_unit_pos = function(_u) {
+    if (variable_struct_exists(_u, "pos")) return _u.pos;   // Urso e funcionários
     for (var i = 0; i < array_length(party); i++) {
         if (party[i] == _u) return { x: 80, y: 100 + i * 60 };
     }
@@ -149,7 +158,6 @@ get_unit_pos = function(_u) {
     }
     return { x: 240, y: 135 };
 }
-
 add_popup = function(_x, _y, _text, _color) {
     array_push(popups, { x: _x, y: _y, text: _text, color: _color,
                          life: 50, life_max: 50, vy: -0.8 });
@@ -261,4 +269,75 @@ draw_dice_face = function(_x, _y, _s, _n) {
     if (_n >= 4) { draw_circle(_x + _c, _y + _a, _r, false); draw_circle(_x + _a, _y + _c, _r, false); }
     if (_n == 6) { draw_circle(_x + _a, _y + _b, _r, false); draw_circle(_x + _c, _y + _b, _r, false); }
     draw_set_color(c_white);
+}
+// ===== BOSS 3: O CHEFE (URSO) =====
+molde_on = (global.andar == 3);
+molde = 0;
+molde_max = 100;
+last_action_id = "";       // última ação do jogador (para detectar repetição)
+proposta_done = false;
+proposal_index = 0;        // 0 = Aceitar, 1 = Recusar
+fase_final = false;
+urso_turns = 0;
+scene_timer = 0;
+worker_names = ["Rafa", "Bia", "Caio", "Duda", "Leo", "Nina"];
+worker_next = 0;
+freed_count = 0;
+freed_names = [];
+
+workers_alive = function() {
+    var _n = 0;
+    for (var i = 0; i < array_length(enemies); i++) {
+        if (is_worker(enemies[i]) && enemies[i].hp > 0) _n++;
+    }
+    return _n;
+}
+
+// Cria um funcionário moldado num espaço livre
+spawn_worker = function() {
+    var _slots = [ { x: 290, y: 70 }, { x: 290, y: 165 }, { x: 440, y: 215 } ];
+    for (var s = 0; s < array_length(_slots); s++) {
+        var _used = false;
+        for (var i = 0; i < array_length(enemies); i++) {
+            if (is_worker(enemies[i]) && enemies[i].hp > 0 && enemies[i].slot == s) _used = true;
+        }
+        if (!_used) {
+            var _name = worker_names[worker_next mod array_length(worker_names)];
+            worker_next++;
+            var _w = make_worker(_name, s, _slots[s]);
+            // _w.sprite = spr_Funcionario;   // quando tiver o sprite
+            if (!variable_struct_exists(_w, "is_dice")) _w.is_dice = false;
+            _w.hp_shown = _w.hp;
+            _w.hp_prev  = _w.hp;
+            array_push(enemies, _w);
+            array_push(turn_order, _w);   // entra no fim da ordem: age depois do Urso
+            add_popup(_slots[s].x, _slots[s].y - 30, "MOLDADO!", c_gray);
+            return true;
+        }
+    }
+    return false;
+}
+
+// Tira o funcionário da luta sem número de dano
+remove_worker = function(_w) {
+    _w.hp = 0;
+    _w.hp_prev = 0;
+    _w.hp_shown = 0;
+}
+
+// Timing perfeito: liberta e ajuda (alterna cura e energia)
+free_worker = function(_w) {
+    array_push(freed_names, _w.name);
+    var _msg;
+    if (freed_count mod 2 == 0) {
+        current.hp = min(current.hp_max, current.hp + 15);
+        _msg = "+15 HP";
+    } else {
+        energy = min(energy_max, energy + 30);
+        _msg = "+30 energia";
+    }
+    freed_count++;
+    add_popup(_w.pos.x, _w.pos.y - 30, "LIBERTADO!", c_lime);
+    log_text = _w.name + " foi libertado! (" + _msg + ")";
+    remove_worker(_w);
 }
