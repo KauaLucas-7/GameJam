@@ -92,6 +92,7 @@ switch (state) {
 
         if (keyboard_check_pressed(vk_up))   menu_index--;
         if (keyboard_check_pressed(vk_down)) menu_index++;
+        if (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)) som(snd_passar_botao);
         menu_index = clamp(menu_index, 0, array_length(menu_options) - 1);
 
         // DROP COLUMN do dado: a opção apagada não pode ser usada neste turno
@@ -101,6 +102,7 @@ switch (state) {
         }
 
         if (keyboard_check_pressed(vk_enter)) {
+            som(snd_selecionar_acoes);
             switch (menu_index) {
 
                 case 0: // Atacar

@@ -80,6 +80,11 @@ else {
     enemies = [ _slime, make_unit("Goblin", 25, 15, 8, 2, 6, false) ];
 }
 
+// Música da luta: cada chefe tem a sua; as outras lutas usam o tema ambiente
+if (global.andar == 1)      tocar_musica(snd_musica_boss_banco);
+else if (global.andar == 2) tocar_musica(snd_musica_boss_python);
+else                        tocar_musica(snd_musica_ambiente);
+
 // --- Ordem dos turnos ---
 turn_order = array_concat(party, enemies);
 array_sort(turn_order, function(a, b) { return b.spd - a.spd; });
@@ -114,6 +119,7 @@ deal_damage = function(_atk, _tgt, _mult, _element) {
     if (_tgt.defending) _d = floor(_d / 2);
     _d = max(1, _d);
     _tgt.hp = max(0, _tgt.hp - _d);
+    som(snd_ataque);
     log_text = _atk.name + " causou " + string(_d) + " em " + _tgt.name
              + (_weak ? " (fraqueza!)" : "");
 }

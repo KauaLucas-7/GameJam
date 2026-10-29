@@ -5,6 +5,7 @@
 display_set_gui_size(480, 270);
 usar_fonte();
 garantir_controle();
+tocar_musica(snd_musica_ambiente);
 cyber_init();
 
 tela = "aviso";   // aviso de conteúdo sensível antes do menu

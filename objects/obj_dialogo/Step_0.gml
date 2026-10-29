@@ -7,6 +7,9 @@ var _fala = linhas[i];
 // Efeitos da linha (3º item opcional): "tremer" ou "flash"
 if (linha_iniciada != i) {
 	linha_iniciada = i;
+	// Vozes: os chefes de dados e Python falam; narração e Nexa ficam sem voz
+	if (_fala[0] == "BD") som(snd_falas_banco);
+	if (_fala[0] == "PY") som(snd_falas_python);
 	letras = 0;
 	if (array_length(_fala) > 2) {
 		if (_fala[2] == "tremer") tremor = 18;

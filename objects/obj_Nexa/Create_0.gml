@@ -8,6 +8,7 @@ diario_aberto = false;  // Q (ou M/TAB) abre o diário de missões
 diario_sel = 0;         // missão selecionada no diário
 diario_anim = 0;        // 0 = fechado, 1 = aberto (animação)
 garantir_controle();    // transições e animações de missão (obj_controle)
+tocar_musica(snd_musica_ambiente);   // tema da empresa nas salas de exploração
 
 // Animação: spr_Nexa = parada | spr_Nexa_andar = caminhando
 sprite_index = spr_Nexa;

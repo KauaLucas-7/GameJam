@@ -169,3 +169,19 @@ function iniciar_luta_andar(_andar) {
 	if (_andar == 3) _sala = rom_urso_fight;
 	iniciar_dialogo("andar" + string(_andar) + "_pre", "luta", _sala);
 }
+
+// ===== ÁUDIO =====
+// Efeito curto (clique, ataque, fala). Prioridade baixa: não briga com a música.
+function som(_snd) {
+	audio_play_sound(_snd, 5, false);
+}
+
+// Música em loop. Se a mesma faixa já estiver tocando, não reinicia
+// (assim a música continua ao trocar de sala com o mesmo tema).
+function tocar_musica(_snd) {
+	if (!variable_global_exists("musica_snd")) { global.musica_snd = noone; global.musica_id = -1; }
+	if (global.musica_snd == _snd) return;
+	if (global.musica_id != -1) audio_stop_sound(global.musica_id);
+	global.musica_snd = _snd;
+	global.musica_id = audio_play_sound(_snd, 10, true);
+}

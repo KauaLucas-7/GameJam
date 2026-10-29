@@ -22,8 +22,10 @@ switch (tela) {
 	case "titulo":
 		if (_cima)  sel = (sel - 1 + array_length(opcoes)) mod array_length(opcoes);
 		if (_baixo) sel = (sel + 1) mod array_length(opcoes);
+		if (_cima || _baixo) som(snd_passar_botao);
 		sel_anim = lerp(sel_anim, sel, 0.25);
 		if (_ok && t > 20) {
+			som(snd_selecionar_botao);
 			switch (sel) {
 				case 0: jogo_novo(); tela = "historia"; q = 0; q_t = 0; letras = 0; break;   // partida zerada
 				case 1: tela = "comojogar"; t = 0; break;
