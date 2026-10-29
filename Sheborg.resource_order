@@ -10,10 +10,16 @@
   "ResourceOrderSettings":[
     {"name":"obj_battle","order":2,"path":"objects/obj_battle/obj_battle.yy",},
     {"name":"obj_Nexa","order":1,"path":"objects/obj_Nexa/obj_Nexa.yy",},
+    {"name":"obj_upgrade","order":3,"path":"objects/obj_upgrade/obj_upgrade.yy",},
+    {"name":"rm_oficina","order":1,"path":"rooms/rm_oficina/rm_oficina.yy",},
     {"name":"scr_boss_python","order":3,"path":"scripts/scr_boss_python/scr_boss_python.yy",},
     {"name":"scr_boss_urso","order":4,"path":"scripts/scr_boss_urso/scr_boss_urso.yy",},
+    {"name":"scr_cyber","order":5,"path":"scripts/scr_cyber/scr_cyber.yy",},
     {"name":"scr_skills","order":1,"path":"scripts/scr_skills/scr_skills.yy",},
     {"name":"scr_status","order":2,"path":"scripts/scr_status/scr_status.yy",},
+    {"name":"spr_Nexa_arms","order":2,"path":"sprites/spr_Nexa_arms/spr_Nexa_arms.yy",},
+    {"name":"spr_Nexa_legs","order":4,"path":"sprites/spr_Nexa_legs/spr_Nexa_legs.yy",},
+    {"name":"spr_Nexa_torso","order":3,"path":"sprites/spr_Nexa_torso/spr_Nexa_torso.yy",},
     {"name":"spr_python","order":1,"path":"sprites/spr_python/spr_python.yy",},
   ],
 }

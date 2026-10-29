@@ -173,7 +173,7 @@ switch (state) {
         break;
 
        case BATTLE_STATE.PLAYER_TIMING:
-        timing_pos += timing_speed * timing_dir;
+        timing_pos += timing_speed * (1 - cyber_total("timing_slow")) * timing_dir;
         if (timing_pos >= 1 || timing_pos <= 0) {
             timing_pos = clamp(timing_pos, 0, 1);
             timing_dir *= -1;
@@ -314,10 +314,11 @@ switch (state) {
 
     case BATTLE_STATE.CHECK_END:
         // Combo e energia
+		var _em = 1 + cyber_total("energy_mult");
         switch (last_result) {
-            case "perfect": combo++; energy += 25; break;
-            case "good":    combo++; energy += 15; break;
-            case "miss":    combo = 0;             break;
+            case "perfect": combo++; energy += floor(25 * _em); break;
+            case "good":    combo++; energy += floor(15 * _em); break;
+            case "miss":    combo = 0;                          break
         }
         energy = clamp(energy, 0, energy_max);
 
@@ -407,9 +408,32 @@ switch (state) {
         if (scene_timer > 330 && keyboard_check_pressed(vk_enter)) room_restart();
         break;
 
-    case BATTLE_STATE.WIN:
+        case BATTLE_STATE.WIN:
+        scene_timer++;
+        // Andares 1 e 2: o boss solta mods. O andar 3 (Molde) é o fim do jogo.
+        if (!molde_on && !reward_given) {
+            reward_given = true;
+            var _names = "";
+            for (var i = 0; i < array_length(enemies); i++) {
+                if (variable_struct_exists(enemies[i], "rewards")) {
+                    for (var j = 0; j < array_length(enemies[i].rewards); j++) {
+                        var _rid = enemies[i].rewards[j];
+                        cyber_give(_rid);
+                        _names += ((_names == "") ? "" : ", ") + global.mods[$ _rid].name;
+                    }
+                }
+            }
+            if (_names != "") log_text = "Mods encontrados: " + _names;
+        }
+        if (keyboard_check_pressed(vk_enter)) {
+            if (molde_on) room_restart();
+            else { global.andar++; room_goto(rm_oficina); }
+        }
+        break;
+
     case BATTLE_STATE.LOSE:
         scene_timer++;
         if (keyboard_check_pressed(vk_enter)) room_restart();
         break;
+
 }

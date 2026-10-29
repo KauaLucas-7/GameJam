@@ -14,7 +14,7 @@ for (var i = 0; i < array_length(party); i++) {
             var _frames = sprite_get_number(_u.sprite);
             var _frame  = floor(current_time / 1000 * 6) mod _frames;
             var _tint = molde_on ? merge_colour(c_white, c_gray, 0.8 * (molde / molde_max)) : c_white;
-            draw_sprite_ext(_u.sprite, _frame, _x, _y, 1, 1, 0, _tint, 1);
+            cyber_draw(_u.sprite, _frame, _x, _y, 1, _tint);
         } else {
             draw_set_color(c_aqua);
             draw_rectangle(_x - 12, _y - 16, _x + 12, _y + 16, false);
@@ -357,7 +357,7 @@ if (molde_on) {
         draw_rectangle(0, 0, 480, 270, false);
         draw_set_alpha(1);
         if (state != BATTLE_STATE.WIN && party[0].sprite != -1)
-            draw_sprite_ext(party[0].sprite, 0, 240, 70, 2, 2, 0, c_gray, 1);   // Nexa apagada
+            cyber_draw(party[0].sprite, 0, 240, 70, 2, c_gray);   // Nexa apagada
         draw_set_halign(fa_center);
         for (var k = 0; k < array_length(_scene); k++) {
             if (scene_timer > 60 + k * 90) {

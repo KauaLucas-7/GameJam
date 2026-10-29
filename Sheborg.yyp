@@ -28,14 +28,20 @@
   "resources":[
     {"id":{"name":"obj_battle","path":"objects/obj_battle/obj_battle.yy",},},
     {"id":{"name":"obj_Nexa","path":"objects/obj_Nexa/obj_Nexa.yy",},},
+    {"id":{"name":"obj_upgrade","path":"objects/obj_upgrade/obj_upgrade.yy",},},
+    {"id":{"name":"rm_oficina","path":"rooms/rm_oficina/rm_oficina.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"scr_boss_python","path":"scripts/scr_boss_python/scr_boss_python.yy",},},
     {"id":{"name":"scr_boss_urso","path":"scripts/scr_boss_urso/scr_boss_urso.yy",},},
+    {"id":{"name":"scr_cyber","path":"scripts/scr_cyber/scr_cyber.yy",},},
     {"id":{"name":"scr_skills","path":"scripts/scr_skills/scr_skills.yy",},},
     {"id":{"name":"scr_status","path":"scripts/scr_status/scr_status.yy",},},
     {"id":{"name":"scr_units","path":"scripts/scr_units/scr_units.yy",},},
     {"id":{"name":"spr_BancoDB","path":"sprites/spr_BancoDB/spr_BancoDB.yy",},},
     {"id":{"name":"spr_Luta01","path":"sprites/spr_Luta01/spr_Luta01.yy",},},
+    {"id":{"name":"spr_Nexa_arms","path":"sprites/spr_Nexa_arms/spr_Nexa_arms.yy",},},
+    {"id":{"name":"spr_Nexa_legs","path":"sprites/spr_Nexa_legs/spr_Nexa_legs.yy",},},
+    {"id":{"name":"spr_Nexa_torso","path":"sprites/spr_Nexa_torso/spr_Nexa_torso.yy",},},
     {"id":{"name":"spr_Nexa","path":"sprites/spr_Nexa/spr_Nexa.yy",},},
     {"id":{"name":"spr_python","path":"sprites/spr_python/spr_python.yy",},},
   ],
@@ -44,6 +50,7 @@
   "RoomOrderNodes":[
     {"children":[],"groupName":"grupo",},
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
+    {"roomId":{"name":"rm_oficina","path":"rooms/rm_oficina/rm_oficina.yy",},},
   ],
   "templateType":"game",
   "TextureGroups":[

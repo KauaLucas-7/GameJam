@@ -5,6 +5,9 @@ enum BATTLE_STATE { START, PLAYER_MENU, PLAYER_SKILL, PLAYER_TARGET, PLAYER_TIMI
 
 state = BATTLE_STATE.START;
 
+cyber_init();
+cyber_give_all();   // TESTE: tire as barras para lutar com todos os mods
+
 // JUNTADO: andar atual (1 = boss Dado, 2 = boss Python, outro = inimigos normais)
 urso = undefined; 
 if (!variable_global_exists("andar")) global.andar =  3;   // mude para 2 para testar o Python
@@ -33,6 +36,7 @@ global.boss_types = [
 party = [ make_unit("Heroi", 40, 20, 10, 3, 8, true) ];
 party[0].sprite = spr_Nexa;
 party[0].skills = [ global.skills.shock, global.skills.fireball, global.skills.ice, global.skills.cure ];
+cyber_apply(party[0]);   // bônus dos mods equipados
 
 // JUNTADO: o inimigo depende do andar
 if (global.andar == 1) {
@@ -40,12 +44,14 @@ if (global.andar == 1) {
     var _dado = make_unit("Dado BD", 50, 0, 9, 2, 4, false);
     _dado.is_dice = true;
     _dado.sprite = spr_BancoDB;
+	_dado.rewards = ["gorilla", "mantis"];
     enemies = [ _dado ];
 }
 else if (global.andar == 2) {
     // ----- Andar 2: boss Python -----
     var _python = make_unit("Python", 80, 0, 9, 2, 7, false);
 	_python.sprite = spr_python;
+	_python.rewards = ["subdermal", "kerenzikov", "tendons", "ankles"];
     boss_init(_python);
     enemies = [ _python ];
 }
@@ -341,3 +347,4 @@ free_worker = function(_w) {
     log_text = _w.name + " foi libertado! (" + _msg + ")";
     remove_worker(_w);
 }
+reward_given = false;
