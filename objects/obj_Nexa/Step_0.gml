@@ -15,7 +15,7 @@ if (diario_aberto) {
 		if (keyboard_check_pressed(vk_up)   || keyboard_check_pressed(ord("W"))) diario_sel = (diario_sel - 1 + _n) mod _n;
 		if (keyboard_check_pressed(vk_down) || keyboard_check_pressed(ord("S"))) diario_sel = (diario_sel + 1) mod _n;
 	}
-	if (keyboard_check_pressed(vk_escape)) diario_aberto = false;
+	if ((keyboard_check_pressed(vk_escape) || keyboard_check_pressed(vk_backspace))) diario_aberto = false;
 	sprite_index = spr_Nexa;
 	anim += 0.05;
 	image_index = anim;

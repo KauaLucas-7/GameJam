@@ -17,4 +17,4 @@ if (row < _n_slots) {
     sair();
 }
 
-if (keyboard_check_pressed(vk_escape)) sair();
+if (keyboard_check_pressed(vk_backspace)) sair();

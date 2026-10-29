@@ -7,7 +7,7 @@ if (fundo_t > 420) { fundo_t = 0; fundo_i = (fundo_i + 1) mod array_length(fundo
 var _cima  = keyboard_check_pressed(vk_up)   || keyboard_check_pressed(ord("W"));
 var _baixo = keyboard_check_pressed(vk_down) || keyboard_check_pressed(ord("S"));
 var _ok    = keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space);
-var _volta = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(vk_backspace);
+var _volta = keyboard_check_pressed(vk_backspace) || keyboard_check_pressed(vk_backspace);
 
 switch (tela) {
 

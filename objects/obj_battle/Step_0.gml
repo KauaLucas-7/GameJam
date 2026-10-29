@@ -162,7 +162,7 @@ switch (state) {
 
         if (keyboard_check_pressed(vk_up))   skill_index = (skill_index - 1 + _count) mod _count;
         if (keyboard_check_pressed(vk_down)) skill_index = (skill_index + 1) mod _count;
-        if (keyboard_check_pressed(vk_escape)) state = BATTLE_STATE.PLAYER_MENU;
+        if (keyboard_check_pressed(vk_backspace)) state = BATTLE_STATE.PLAYER_MENU;
 
         if (keyboard_check_pressed(vk_enter)) {
             var _s = _skills[skill_index];
@@ -193,7 +193,7 @@ switch (state) {
         if (keyboard_check_pressed(vk_left))  target_index = (target_index - 1 + _n) mod _n;
         if (keyboard_check_pressed(vk_right)) target_index = (target_index + 1) mod _n;
 
-        if (keyboard_check_pressed(vk_escape)) {
+        if (keyboard_check_pressed(vk_backspace)) {
             state = (chosen_action == "skill") ? BATTLE_STATE.PLAYER_SKILL : BATTLE_STATE.PLAYER_MENU;
 			
         }
@@ -254,7 +254,7 @@ switch (state) {
             state = BATTLE_STATE.EXECUTE_ACTION;
         }
 
-        if (keyboard_check_pressed(vk_escape)) state = BATTLE_STATE.PLAYER_TARGET;
+        if (keyboard_check_pressed(vk_backspace)) state = BATTLE_STATE.PLAYER_TARGET;
         break;
        case BATTLE_STATE.ENEMY_TURN:
         if (current.is_dice) {

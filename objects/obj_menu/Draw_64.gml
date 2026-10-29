@@ -198,7 +198,7 @@ if (tela == "comojogar" || tela == "creditos") {
 	}
 	draw_set_alpha(1);
 	draw_set_color(c_ltgray);
-	draw_text_transformed(30, 240, texto_seguro("[Esc/Enter] voltar"), 0.75, 0.75, 0);
+	draw_text_transformed(30, 240, texto_seguro("[Backspace/Enter] voltar"), 0.75, 0.75, 0);
 }
 
 // =====================================================================
@@ -317,7 +317,7 @@ if (tela == "historia") {
 	}
 	draw_set_color(c_gray);
 	draw_set_halign(fa_right);
-	draw_text_transformed(474, 8, texto_seguro("[ESPAÇO] continuar   [ESC] pular"), 0.7, 0.7, 0);
+	draw_text_transformed(474, 8, texto_seguro("[ESPAÇO] continuar   [BACKSPACE] pular"), 0.7, 0.7, 0);
 	draw_set_halign(fa_left);
 }
 draw_set_alpha(1);

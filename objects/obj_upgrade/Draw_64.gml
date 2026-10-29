@@ -37,4 +37,4 @@ draw_text(210, 34 + _n_slots * 30, ((row == _n_slots) ? "> " : "  ") + "Voltar a
 draw_text(210, 196, "ATK +" + string(cyber_total("atk")) + "  DEF +" + string(cyber_total("def"))
                   + "  SPD +" + string(cyber_total("spd")) + "  HP +" + string(cyber_total("hp")));
 draw_text(210, 220, "Cima/baixo: parte | Esq/dir: trocar");
-draw_text(210, 236, "Esc: voltar ao mapa");
+draw_text(210, 236, "Backspace: voltar ao mapa");

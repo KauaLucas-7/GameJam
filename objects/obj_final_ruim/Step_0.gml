@@ -13,7 +13,7 @@ if (fim) {
 			global.retorno_luta = rm_andar3;
 			trocar_sala(rom_urso_fight, "batalha");
 		}
-		if (keyboard_check_pressed(vk_escape)) game_restart();
+		if (keyboard_check_pressed(vk_backspace)) game_restart();
 	}
 	exit;
 }

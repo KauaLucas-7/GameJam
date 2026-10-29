@@ -173,7 +173,7 @@ if (fim) {
 		draw_set_alpha(0.5 + 0.5 * sin(current_time / 200));
 		draw_set_color(c_ltgray);
 		draw_text(240, 180, texto_seguro("[ENTER] tentar de novo e recusar o molde"));
-		draw_text(240, 198, "[ESC] voltar ao menu");
+		draw_text(240, 198, "[BACKSPACE] voltar ao menu");
 	}
 	draw_set_halign(fa_left);
 	draw_set_alpha(1);

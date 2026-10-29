@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"snd_musica_ambiente.wav",
+  "soundFile":"snd_musica_ambiente.mp3",
   "volume":0.5,
 }
