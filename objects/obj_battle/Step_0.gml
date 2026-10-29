@@ -426,8 +426,20 @@ switch (state) {
             if (_names != "") log_text = "Mods encontrados: " + _names;
         }
         if (keyboard_check_pressed(vk_enter)) {
-            if (molde_on) room_restart();
-            else { global.andar++; room_goto(rm_oficina); }
+            if (molde_on) {
+				if (!variable_instance_exists(id, "final_disparado")) {
+					final_disparado = true;
+					iniciar_dialogo("final", "creditos", -1);
+				}
+			}
+            else {
+				var _venceu = global.andar;
+				if (!variable_global_exists("vencidos")) global.vencidos = {};
+				variable_struct_set(global.vencidos, "a" + string(_venceu), true);
+				global.cena_pendente = (_venceu == 1) ? "andar1_fim" : "andar2_pos";
+				global.andar++;
+				if (_venceu == 1) room_goto(rm_andar1); else room_goto(rm_andar2);
+			}
         }
         break;
 

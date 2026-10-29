@@ -10,6 +10,11 @@
   "ResourceOrderSettings":[
     {"name":"obj_battle","order":2,"path":"objects/obj_battle/obj_battle.yy",},
     {"name":"obj_Nexa","order":1,"path":"objects/obj_Nexa/obj_Nexa.yy",},
+    {"name":"obj_intro","order":30,"path":"objects/obj_intro/obj_intro.yy",},
+    {"name":"obj_parede","order":20,"path":"objects/obj_parede/obj_parede.yy",},
+    {"name":"obj_porta","order":21,"path":"objects/obj_porta/obj_porta.yy",},
+    {"name":"obj_gatilho","order":22,"path":"objects/obj_gatilho/obj_gatilho.yy",},
+    {"name":"obj_dialogo","order":23,"path":"objects/obj_dialogo/obj_dialogo.yy",},
     {"name":"obj_upgrade","order":3,"path":"objects/obj_upgrade/obj_upgrade.yy",},
     {"name":"rm_andar1","order":7,"path":"rooms/rm_andar1/rm_andar1.yy",},
     {"name":"rm_andar2","order":6,"path":"rooms/rm_andar2/rm_andar2.yy",},

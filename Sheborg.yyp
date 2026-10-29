@@ -30,6 +30,13 @@
   "resources":[
     {"id":{"name":"obj_battle","path":"objects/obj_battle/obj_battle.yy",},},
     {"id":{"name":"obj_Nexa","path":"objects/obj_Nexa/obj_Nexa.yy",},},
+    {"id":{"name":"obj_intro","path":"objects/obj_intro/obj_intro.yy",},},
+    {"id":{"name":"spr_parede","path":"sprites/spr_parede/spr_parede.yy",},},
+    {"id":{"name":"obj_parede","path":"objects/obj_parede/obj_parede.yy",},},
+    {"id":{"name":"obj_porta","path":"objects/obj_porta/obj_porta.yy",},},
+    {"id":{"name":"obj_gatilho","path":"objects/obj_gatilho/obj_gatilho.yy",},},
+    {"id":{"name":"obj_dialogo","path":"objects/obj_dialogo/obj_dialogo.yy",},},
+    {"id":{"name":"scr_falas","path":"scripts/scr_falas/scr_falas.yy",},},
     {"id":{"name":"obj_upgrade","path":"objects/obj_upgrade/obj_upgrade.yy",},},
     {"id":{"name":"rm_andar1","path":"rooms/rm_andar1/rm_andar1.yy",},},
     {"id":{"name":"rm_andar2","path":"rooms/rm_andar2/rm_andar2.yy",},},
