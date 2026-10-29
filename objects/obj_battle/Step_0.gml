@@ -1,3 +1,28 @@
+// Partículas do cenário (andam mesmo durante a abertura)
+for (var i = 0; i < array_length(fundo_part); i++) {
+	var _fp = fundo_part[i];
+	if (global.andar == 1) { _fp.y += _fp.v; if (_fp.y > 272) { _fp.y = -6; _fp.x = random(480); } }
+	else                   { _fp.y -= _fp.v; if (_fp.y < -6)  { _fp.y = 272; _fp.x = random(480); } }
+}
+
+// Espera a transição de entrada da batalha terminar
+if (em_transicao()) exit;
+
+// ===== CUTSCENE DE ABERTURA (apresentação do chefe) =====
+if (state == BATTLE_STATE.INTRO) {
+	intro_t++;
+	var _pular = intro_t > 25 && (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space));
+	if (intro_t >= 170 || _pular) state = BATTLE_STATE.START;
+	exit;
+}
+
+// ===== DICA DE TUTORIAL (pausa a luta até o jogador confirmar) =====
+if (dica != "") {
+	dica_t++;
+	if (dica_t > 20 && (keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space))) dica = "";
+	exit;
+}
+
 // ===== EFEITOS VISUAIS =====
 
 // 1) Detecta mudança de HP -> número flutuante + tremor
@@ -53,9 +78,21 @@ switch (state) {
         break;
 
     case BATTLE_STATE.PLAYER_MENU:
+        // Dicas do tutorial (uma vez cada)
+        if (mostrar_dica("menu")) break;
+        if (global.andar == 2 && mostrar_dica("python")) break;
+        if (molde_on && mostrar_dica("molde")) break;
+        if (energy >= energy_max && mostrar_dica("especial")) break;
+
         if (keyboard_check_pressed(vk_up))   menu_index--;
         if (keyboard_check_pressed(vk_down)) menu_index++;
         menu_index = clamp(menu_index, 0, array_length(menu_options) - 1);
+
+        // DROP COLUMN do dado: a opção apagada não pode ser usada neste turno
+        if (keyboard_check_pressed(vk_enter) && menu_index == menu_locked) {
+            log_text = "Apagada pelo DROP COLUMN!";
+            break;
+        }
 
         if (keyboard_check_pressed(vk_enter)) {
             switch (menu_index) {
@@ -173,6 +210,7 @@ switch (state) {
         break;
 
        case BATTLE_STATE.PLAYER_TIMING:
+        if (mostrar_dica("ataque")) break;
         timing_pos += timing_speed * (1 - cyber_total("timing_slow")) * timing_dir;
         if (timing_pos >= 1 || timing_pos <= 0) {
             timing_pos = clamp(timing_pos, 0, 1);
@@ -268,44 +306,136 @@ switch (state) {
         }
         break;
 
+    // ===== BOSS 1: rolagem do dado (restaurado do commit 1047d24) =====
+    case BATTLE_STATE.ROLL:
+        if (roll_timer == 0 && mostrar_dica("dado")) break;
+        roll_timer++;
+
+        if (roll_timer < 60) {
+            // Girando: a face troca rápido e vai desacelerando
+            var _interval = (roll_timer < 30) ? 3 : 6;
+            if ((roll_timer mod _interval) == 0) roll_face_shown = irandom_range(1, 6);
+        }
+        else if (roll_timer == 60) {
+            // Pousou
+            roll_face_shown = roll_result;
+            start_shake(3, 10);
+            log_text = "Dado: " + string(roll_result) + "!";
+        }
+        else if (roll_timer >= 110) {
+            // Executa o ataque da face sorteada
+            var _bp2 = get_unit_pos(current);
+            add_popup(_bp2.x, _bp2.y - 55, dice_faces[roll_result - 1].name, c_white);
+
+            switch (roll_result) {
+                case 1: // NULL: falha e fica exposto
+                    boss_exposed = true;
+                    log_text = "NULL! Exposto: seu proximo golpe vale 2x";
+                    timer = 60;
+                    state = BATTLE_STATE.EXECUTE_ACTION;
+                    break;
+
+                case 2: // SELECT *: ataque básico
+                    start_boss_attack(1, 1, 50, 3, 8, false);
+                    log_text = "SELECT * em " + def_victim.name + "!";
+                    break;
+
+                case 3: // UPDATE: ATK -30% por 2 turnos
+                    atk_debuff = 2;
+                    log_text = "UPDATE! Seu ATK caiu 30% por 2 turnos";
+                    timer = 60;
+                    state = BATTLE_STATE.EXECUTE_ACTION;
+                    break;
+
+                case 4: // DROP COLUMN: apaga Habilidade ou Item por 1 turno
+                    menu_locked = choose(2, 3);
+                    log_text = "DROP COLUMN! " + menu_options[menu_locked] + " apagada";
+                    timer = 60;
+                    state = BATTLE_STATE.EXECUTE_ACTION;
+                    break;
+
+                case 5: // DELETE: golpe duplo (duas janelas de defesa)
+                    start_boss_attack(0.8, 2, 38, 3, 8, false);
+                    log_text = "DELETE! Golpe duplo!";
+                    break;
+
+                case 6: // DROP TABLE: golpe devastador, janela curta, depois recarrega
+                    boss_recharging = true;
+                    start_boss_attack(3, 1, 34, 2, 5, true);
+                    log_text = "DROP TABLE!!! Defenda!";
+                    break;
+            }
+        }
+        break;
+
     case BATTLE_STATE.DEFENSE:
-    def_timer++;
+        if (def_timer == 0 && mostrar_dica("defesa")) break;
+        def_timer++;
 
-    if (def_press == -1 && keyboard_check_pressed(vk_space)) def_press = def_timer;
+        // Só vale o primeiro aperto
+        if (def_press == -1 && keyboard_check_pressed(vk_space)) def_press = def_timer;
 
-    if (def_timer >= def_hit + 8) {
-        var _diff = (def_press == -1) ? 999 : abs(def_press - def_hit);
-        var _is_boss = variable_struct_exists(current, "typed");
-        var _bmult = _is_boss ? boss_dmg_mult(current) : 1;
+        var _jan = cyber_total("def_window");   // Fone Antirruído: janelas maiores
+        var _perf = def_perfect + _jan;
+        var _boa  = def_good + _jan;
 
-        if (_diff <= 3) {
-            // Perfeita: bloqueia tudo
-            log_text = "DEFESA PERFEITA! " + def_victim.name + " bloqueou o golpe.";
-            add_popup(def_x, def_y - 30, "BLOQUEOU!", c_aqua);
-            last_result = "perfect";
-            if (_is_boss) log_text += boss_on_block(current);
+        // Resolve quando a janela fecha
+        if (def_timer >= def_hit + _boa) {
+            var _diff = (def_press == -1) ? 999 : abs(def_press - def_hit);
+            var _is_boss = variable_struct_exists(current, "typed");   // Python
+            var _res = "miss";
+
+            // Firewall Portátil: o 1º golpe que acertaria vira bloqueio
+            var _fw = false;
+            if (_diff > _perf && firewall_cargas > 0) {
+                firewall_cargas--;
+                _diff = 0;
+                _fw = true;
+            }
+
+            if (_diff <= _perf) {
+                // Perfeita: bloqueia tudo
+                log_text = (_fw ? "FIREWALL! " : "DEFESA PERFEITA! ") + def_victim.name + " bloqueou o golpe.";
+                add_popup(def_x, def_y - 30, _fw ? "FIREWALL!" : "BLOQUEOU!", c_aqua);
+                _res = "perfect";
+                if (_is_boss) log_text += boss_on_block(current);
+            }
+            else if (_diff <= _boa) {
+                if (def_heavy) {
+                    // Golpe pesado: a defesa boa alivia só um pouco
+                    deal_damage(current, def_victim, enemy_mult * 0.7, "");
+                } else {
+                    // Normal: dano pela metade
+                    var _was = def_victim.defending;
+                    def_victim.defending = true;
+                    deal_damage(current, def_victim, enemy_mult, "");
+                    def_victim.defending = _was;
+                }
+                log_text = "Defesa boa! " + log_text;
+                _res = "good";
+                if (_is_boss) log_text += boss_on_hit(current, def_victim);
+            }
+            else {
+                // Errou ou não apertou: dano completo
+                deal_damage(current, def_victim, enemy_mult, "");
+                _res = "miss";
+                if (_is_boss) log_text += boss_on_hit(current, def_victim);
+            }
+
+            register_defense(_res);
+
+            if (def_hits_left > 1 && def_victim.hp > 0) {
+                // Tem mais um golpe vindo: reinicia a janela
+                def_hits_left--;
+                def_timer = 0;
+                def_press = -1;
+                log_text = "Segundo golpe!";
+            } else {
+                timer = 30;
+                state = BATTLE_STATE.EXECUTE_ACTION;
+            }
         }
-        else if (_diff <= 8) {
-            // Boa: dano pela metade (ainda envenena)
-            var _was = def_victim.defending;
-            def_victim.defending = true;
-            deal_damage(current, def_victim, _bmult, "");
-            def_victim.defending = _was;
-            log_text = "Defesa boa! " + log_text;
-            last_result = "good";
-            if (_is_boss) log_text += boss_on_hit(current, def_victim);
-        }
-        else {
-            // Errou ou não apertou: dano completo
-            deal_damage(current, def_victim, _bmult, "");
-            last_result = "miss";
-            if (_is_boss) log_text += boss_on_hit(current, def_victim);
-        }
-
-		//timer = (_py || is_urso(current)) ? 70 : 30;   // texto maior, mais tempo para ler
-        state = BATTLE_STATE.EXECUTE_ACTION;
-    }
-    break;
+        break;
 
     case BATTLE_STATE.EXECUTE_ACTION:
         timer--;
@@ -347,8 +477,19 @@ switch (state) {
         if (current.is_player) {
             if (atk_debuff > 0) atk_debuff--;
             menu_locked = -1;
+            // Power Bank: recupera MP no fim do turno
+            var _reg = cyber_total("mp_regen");
+            if (_reg > 0) current.mp = min(current.mp_max, current.mp + _reg);
         }
         roll_active = false;
+
+        // Pendrive de Backup: se a Nexa cair, volta uma vez com 30% de HP
+        if (array_length(alive_list(party)) == 0 && backup_cargas > 0) {
+            backup_cargas--;
+            party[0].hp = max(1, floor(party[0].hp_max * 0.3));
+            add_popup(80, 60, "BACKUP!", c_aqua);
+            log_text = "Pendrive de Backup: sistema restaurado!";
+        }
 
         // No 3o andar vence quem derrota o Urso (os robôs restantes voltam ao normal)
         var _enemies_dead = molde_on ? (urso.hp <= 0) : (array_length(alive_list(enemies)) == 0);
@@ -429,7 +570,7 @@ switch (state) {
             if (molde_on) {
 				if (!variable_instance_exists(id, "final_disparado")) {
 					final_disparado = true;
-					iniciar_dialogo("final", "creditos", -1);
+					iniciar_dialogo("final", "final", -1);   // depois: cutscene final e créditos (rm_final)
 				}
 			}
             else {
@@ -438,7 +579,15 @@ switch (state) {
 				variable_struct_set(global.vencidos, "a" + string(_venceu), true);
 				global.cena_pendente = (_venceu == 1) ? "andar1_fim" : "andar2_pos";
 				global.andar++;
-				if (_venceu == 1) room_goto(rm_andar1); else room_goto(rm_andar2);
+				// Volta para onde a Nexa estava quando a luta começou
+				if (variable_global_exists("retorno_luta") && global.retorno_luta != -1) {
+					global.usar_spawn = true;
+					var _volta = global.retorno_luta;
+					global.retorno_luta = -1;
+					trocar_sala(_volta);
+				}
+				else if (_venceu == 1) trocar_sala(rm_andar1);
+				else trocar_sala(rm_andar2);
 			}
         }
         break;

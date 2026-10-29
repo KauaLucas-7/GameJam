@@ -1,8 +1,81 @@
+// Cenário da luta
+desenhar_fundo();
+
+// ===== Cutscene de abertura: Nexa VS chefe =====
+if (state == BATTLE_STATE.INTRO) {
+	var _t = intro_t;
+	var _fim = (_t > 140) ? ease_in((_t - 140) / 30) : 0;   // sai de cena no final
+
+	// barras de cinema
+	var _bar = 34 * ease_out(_t / 18) * (1 - _fim);
+	draw_set_color(c_black);
+	draw_rectangle(0, 0, 480, _bar, false);
+	draw_rectangle(0, 270 - _bar, 480, 270, false);
+
+	// faixa diagonal com a cor do chefe
+	draw_set_alpha(0.3 * (1 - _fim));
+	draw_set_color(intro_info.cor);
+	var _dw = 300 * ease_out((_t - 20) / 20);
+	draw_triangle(480 - _dw, 270, 480, 270, 480, 270 - _dw * 0.6, false);
+	draw_set_alpha(1);
+
+	// Nexa entra pela esquerda, o chefe pela direita
+	var _nx = lerp(-80, 120, ease_out(_t / 26)) - 200 * _fim;
+	var _bx = lerp(560, 360, ease_out(_t / 26)) + 200 * _fim;
+	cyber_draw(spr_Nexa, floor(_t / 10) mod sprite_get_number(spr_Nexa), _nx, 140, 2, c_white, 1);
+	if (intro_info.spr != -1) {
+		draw_sprite_ext(intro_info.spr, floor(_t / 10) mod sprite_get_number(intro_info.spr), _bx, 132,
+		                intro_info.esc, intro_info.esc, 0, c_white, 1);
+	}
+
+	// "VS" estourando no centro
+	if (_t > 30) {
+		var _vs = ease_back((_t - 30) / 14) * (1 - _fim);
+		draw_set_halign(fa_center); draw_set_valign(fa_middle);
+		draw_set_color(c_black);
+		draw_text_transformed(242, 122, "VS", 3 * _vs, 3 * _vs, -8);
+		draw_set_color(c_yellow);
+		draw_text_transformed(240, 120, "VS", 3 * _vs, 3 * _vs, -8);
+		draw_set_halign(fa_left); draw_set_valign(fa_top);
+	}
+
+	// clarão quando o VS bate
+	if (_t >= 30 && _t < 42) {
+		draw_set_alpha(1 - (_t - 30) / 12);
+		draw_set_color(c_white);
+		draw_rectangle(0, 0, 480, 270, false);
+		draw_set_alpha(1);
+	}
+
+	// nome e título do chefe
+	if (_t > 50) {
+		var _na = ease_out((_t - 50) / 20) * (1 - _fim);
+		draw_set_alpha(_na);
+		draw_set_halign(fa_right);
+		draw_set_color(intro_info.cor);
+		draw_text_transformed(466 + 20 * (1 - _na), 196, texto_seguro(intro_info.nome), 1.6, 1.6, 0);
+		draw_set_color(c_white);
+		draw_text(466 + 20 * (1 - _na), 222, texto_seguro(intro_info.titulo));
+		draw_set_halign(fa_left);
+		draw_set_color(c_aqua);
+		draw_text_transformed(14 - 20 * (1 - _na), 196, "NEXA", 1.6, 1.6, 0);
+		draw_set_alpha(1);
+	}
+	if (_t > 60) {
+		draw_set_alpha(0.5 + 0.5 * sin(current_time / 150));
+		draw_set_color(c_ltgray);
+		draw_text(14, 256, "[ENTER] lutar");
+		draw_set_alpha(1);
+	}
+	draw_set_color(c_white);
+	exit;
+}
+
 // Tremor
 matrix_set(matrix_world, matrix_build(shake_x, shake_y, 0, 0, 0, 0, 1, 1, 1));
 
 draw_set_color(c_white);
-draw_text(4, 4, "Estado: " + string(state));
+if (global.ver_paredes) draw_text(4, 4, "Estado: " + string(state));   // depuração (F1)
 
 // Aliados (esquerda)
 for (var i = 0; i < array_length(party); i++) {
@@ -229,7 +302,8 @@ if (state == BATTLE_STATE.PLAYER_SKILL) {
 
         draw_set_color(_can ? c_white : c_gray);
         var _cursor = (i == skill_index) ? "> " : "  ";
-        draw_text(140, 190 + i * 16, _cursor + _s.name + " (" + string(_s.cost) + " MP)");
+        var _esp = (array_length(_skills) > 4) ? 12 : 16;   // 5 habilidades: lista mais compacta
+        draw_text(140, 190 + i * _esp, _cursor + _s.name + " (" + string(_s.cost) + " MP)");
     }
     draw_set_color(c_white);
 }
@@ -382,3 +456,36 @@ if (molde_on) {
     }
 }
 matrix_set(matrix_world, matrix_build_identity());
+// ===== Dica de tutorial (pausa) =====
+if (dica != "") {
+	var _d = dica_texto(dica);
+	var _a = ease_out(dica_t / 14);
+	draw_set_alpha(0.55 * _a);
+	draw_set_color(c_black);
+	draw_rectangle(0, 0, 480, 270, false);
+	var _py = 60 + 16 * (1 - _a);
+	draw_set_alpha(0.95 * _a);
+	draw_set_color(make_colour_rgb(10, 14, 28));
+	draw_roundrect(70, _py, 410, _py + 120, false);
+	draw_set_alpha(_a);
+	draw_set_color(c_aqua);
+	draw_roundrect(70, _py, 410, _py + 120, true);
+	draw_text_transformed(82, _py + 6, "DICA DE BATALHA", 0.7, 0.7, 0);
+	draw_set_color(c_yellow);
+	draw_text(82, _py + 18, texto_seguro(_d[0]));
+	draw_set_color(c_white);
+	var _yy = _py + 38;
+	for (var k = 1; k < array_length(_d); k++) {
+		draw_text_ext(82, _yy, texto_seguro(_d[k]), 12, 316);
+		_yy += 4 + string_height_ext(texto_seguro(_d[k]), 12, 316);
+	}
+	if (dica_t > 20) {
+		draw_set_alpha(_a * (0.5 + 0.5 * sin(current_time / 150)));
+		draw_set_color(c_ltgray);
+		draw_set_halign(fa_right);
+		draw_text(402, _py + 104, "[ENTER] entendi");
+		draw_set_halign(fa_left);
+	}
+	draw_set_alpha(1);
+	draw_set_color(c_white);
+}

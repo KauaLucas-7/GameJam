@@ -1,8 +1,7 @@
 {
   "$GMObject":"",
   "%Name":"obj_parede",
-  "eventList":[
-  ],
+  "eventList":[],
   "managed":true,
   "name":"obj_parede",
   "overriddenProperties":[],

@@ -1,9 +1,9 @@
 function cyber_init() {
-    if (variable_global_exists("cyber_ready")) return;   // roda uma vez; os mods sobrevivem entre batalhas
+    if (variable_global_exists("cyber_ready") && global.cyber_ready) return;   // roda uma vez por partida; os mods sobrevivem entre batalhas
     global.cyber_ready = true;
 
-    global.mod_slots = ["arms", "torso", "legs"];
-    global.slot_names = { arms: "Bracos", torso: "Torso", legs: "Pernas" };
+    global.mod_slots = ["arms", "torso", "legs", "tool"];
+    global.slot_names = { arms: "Bracos", torso: "Torso", legs: "Pernas", tool: "Ferramenta" };
 
     // Cada mod: slot + bônus. Campo que não existe conta como 0.
     global.mods = {
@@ -12,12 +12,21 @@ function cyber_init() {
         subdermal:  { name: "Armadura Subdermica",     slot: "torso", desc: "+3 DEF, +10 HP",                def: 3, hp: 10 },
         kerenzikov: { name: "Kerenzikov",              slot: "torso", desc: "Barra de timing 30% mais lenta", timing_slow: 0.3 },
         tendons:    { name: "Tendoes Reforcados",      slot: "legs",  desc: "+3 SPD",                        spd: 3 },
-        ankles:     { name: "Tornozelos Fortificados", slot: "legs",  desc: "+2 DEF, +1 SPD",                def: 2, spd: 1 }
+        ankles:     { name: "Tornozelos Fortificados", slot: "legs",  desc: "+2 DEF, +1 SPD",                def: 2, spd: 1 },
+
+        // Ferramentas (dadas por NPCs). Uma equipada por vez; efeitos lidos no obj_battle.
+        powerbank:  { name: "Power Bank",         slot: "tool", desc: "+10 MP max, +2 MP por turno",       mp: 10, mp_regen: 2 },
+        antirruido: { name: "Fone Antirruido",    slot: "tool", desc: "Janela de defesa maior (+2 frames)", def_window: 2 },
+        firewall:   { name: "Firewall Portatil",  slot: "tool", desc: "Bloqueia o 1o golpe que acertaria",  first_block: 1 },
+        overclock:  { name: "Overclock USB",      slot: "tool", desc: "Comeca a luta com 50 de energia",    start_energy: 50 },
+        backup:     { name: "Pendrive de Backup", slot: "tool", desc: "Volta com 30% de HP uma vez",        revive: 1 }
     };
 
-    global.mod_inventory = [];                                  // ids dos mods que o jogador possui
-    global.mod_equipped = { arms: "", torso: "", legs: "" };    // "" = nada equipado
+    global.mod_inventory = [];                                              // ids dos mods que o jogador possui
+    global.mod_equipped = { arms: "", torso: "", legs: "", tool: "" };      // "" = nada equipado
     global.mod_overlay = { arms: spr_Nexa_arms, torso: spr_Nexa_torso, legs: spr_Nexa_legs };
+    // Mesmas camadas para o ciclo de caminhada (quadros alinhados com spr_Nexa_andar)
+    global.mod_overlay_andar = { arms: spr_Nexa_andar_arms, torso: spr_Nexa_andar_torso, legs: spr_Nexa_andar_legs };
 
     // Ponto (no sprite) que a oficina destaca em cada parte do corpo
     global.mod_marker = { arms: {x: 26, y: 27}, torso: {x: 33, y: 21}, legs: {x: 32, y: 45} };
@@ -62,19 +71,35 @@ function cyber_apply(_u) {
     _u.spd += cyber_total("spd");
     _u.hp_max += cyber_total("hp");
     _u.hp = _u.hp_max;
+    _u.mp_max += cyber_total("mp");
+
+    // Bônus permanentes das missões secundárias (scr_missoes)
+    if (variable_global_exists("bonus")) {
+        _u.atk += global.bonus.atk;
+        _u.def += global.bonus.def;
+        _u.hp_max += global.bonus.hp;
+        _u.mp_max += global.bonus.mp;
+    }
+    _u.hp = _u.hp_max;
+    _u.mp = _u.mp_max;
 }
 
 // Desenha o corpo e, por cima, a camada de cada parte que tem mod
-function cyber_draw(_spr, _frame, _x, _y, _scale = 1, _tint = c_white) {
-    draw_sprite_ext(_spr, _frame, _x, _y, _scale, _scale, 0, _tint, 1);
-    if (_spr != spr_Nexa) return;
+// _xs = -1 desenha espelhado (Nexa virada para a esquerda)
+function cyber_draw(_spr, _frame, _x, _y, _scale = 1, _tint = c_white, _xs = 1) {
+    draw_sprite_ext(_spr, _frame, _x, _y, _scale * _xs, _scale, 0, _tint, 1);
+
+    var _camadas;
+    if (_spr == spr_Nexa) _camadas = global.mod_overlay;
+    else if (_spr == spr_Nexa_andar) _camadas = global.mod_overlay_andar;
+    else return;
 
     var _order = ["legs", "torso", "arms"];   // braços por cima
     for (var i = 0; i < 3; i++) {
         var _slot = _order[i];
         if (global.mod_equipped[$ _slot] != "") {
-            var _ov = global.mod_overlay[$ _slot];
-            draw_sprite_ext(_ov, _frame mod sprite_get_number(_ov), _x, _y, _scale, _scale, 0, _tint, 1);
+            var _ov = _camadas[$ _slot];
+            draw_sprite_ext(_ov, _frame mod sprite_get_number(_ov), _x, _y, _scale * _xs, _scale, 0, _tint, 1);
         }
     }
 }

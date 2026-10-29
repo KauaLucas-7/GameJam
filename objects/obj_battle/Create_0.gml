@@ -1,23 +1,32 @@
 display_set_gui_size(480, 270);
+usar_fonte();   // fonte com acentos (ou a padrão, se ainda não foi gerada)
 
 enum BATTLE_STATE { START, PLAYER_MENU, PLAYER_SKILL, PLAYER_TARGET, PLAYER_TIMING,
-	 EXECUTE_ACTION, ENEMY_TURN, ROLL, DEFENSE, CHECK_END, PROPOSAL, MOLD_END, ENDING_BAD, WIN, LOSE }
+	 EXECUTE_ACTION, ENEMY_TURN, ROLL, DEFENSE, CHECK_END, PROPOSAL, MOLD_END, ENDING_BAD, WIN, LOSE, INTRO }
 
-state = BATTLE_STATE.START;
+state = BATTLE_STATE.INTRO;   // começa com a cutscene de apresentação do chefe
+intro_t = 0;
+garantir_controle();
 
 cyber_init();
-cyber_give_all();   // TESTE: tire as barras para lutar com todos os mods
+// cyber_give_all();   // TESTE: tire as barras para lutar com todos os mods
 
-// JUNTADO: andar atual (1 = boss Dado, 2 = boss Python, outro = inimigos normais)
-urso = undefined; 
-if (!variable_global_exists("andar")) global.andar =  3;   // mude para 2 para testar o Python
+// JUNTADO: andar atual (1 = boss Dado, 2 = boss Python, 3 = Urso, outro = inimigos normais)
+urso = undefined;
+if (!variable_global_exists("andar")) global.andar =  3;
+// A sala de luta define o chefe (assim cada sala pode ser testada sozinha)
+if (room == rom_banco_fight)      global.andar = 1;
+else if (room == rm_python_fight) global.andar = 2;
+else if (room == rom_urso_fight)  global.andar = 3;
 
 // --- Skills e itens (recriados a cada batalha) ---
 global.skills = {
     shock:    { name: "Curto circuito", cost: 5, power: 19, element: "lightning", heal: false },
     fireball: { name: "Bola de fogo",   cost: 8, power: 16, element: "fire",      heal: false },
     ice:      { name: "Raio de gelo",   cost: 6, power: 17, element: "ice",       heal: false },   // JUNTADO: 3o tipo do Python
-    cure:     { name: "Cura",           cost: 6, power: 15, element: "none",      heal: true  }
+    cure:     { name: "Cura",           cost: 6, power: 15, element: "none",      heal: true  },
+    // Liberada pela missão "Reflexos" (espelhos)
+    autoconfianca: { name: "Autoconfianca", cost: 6, power: 28, element: "none", heal: true }
 };
 
 global.items = {
@@ -36,7 +45,8 @@ global.boss_types = [
 party = [ make_unit("Heroi", 40, 20, 10, 3, 8, true) ];
 party[0].sprite = spr_Nexa;
 party[0].skills = [ global.skills.shock, global.skills.fireball, global.skills.ice, global.skills.cure ];
-cyber_apply(party[0]);   // bônus dos mods equipados
+if (variable_global_exists("skill_autoconfianca") && global.skill_autoconfianca) array_push(party[0].skills, global.skills.autoconfianca);
+cyber_apply(party[0]);   // bônus dos mods equipados e das missões
 
 // JUNTADO: o inimigo depende do andar
 if (global.andar == 1) {
@@ -125,6 +135,14 @@ chosen_target = undefined;
 combo = 0;
 energy = 0;
 energy_max = 100;
+
+// --- Ferramentas equipadas (scr_cyber, slot "tool") ---
+energy = cyber_total("start_energy");                   // Overclock USB
+if (variable_global_exists("bonus")) energy += global.bonus.energia;   // missão "Não é Brincadeira"
+energy = min(energy_max, energy);
+firewall_cargas = cyber_total("first_block");           // Firewall Portátil
+backup_cargas = cyber_total("revive");                  // Pendrive de Backup
+
 last_result = "none";   // "perfect", "good", "miss" ou "none" (lido no CHECK_END)
 
 // --- Defesa ativa ---
@@ -349,3 +367,81 @@ free_worker = function(_w) {
     remove_worker(_w);
 }
 reward_given = false;
+
+// ===== TUTORIAL DE BATALHA =====
+// Na 1ª vez que cada mecânica aparece, a luta pausa e mostra uma dica.
+dica = "";
+dica_t = 0;
+dica_texto = function(_id) {
+	switch (_id) {
+		case "menu":     return ["SUA VEZ", "Use Cima/Baixo para escolher e Enter para confirmar.", "Atacar usa uma barra de ritmo. Defender reduz o dano.", "Habilidade gasta MP. Item cura a Nexa."];
+		case "ataque":   return ["ATAQUE COM RITMO", "Aperte ESPAÇO quando o marcador passar pelo CENTRO da barra.", "No centro: PERFEITO (mais dano e combo).", "Errar zera o combo."];
+		case "defesa":   return ["DEFESA ATIVA", "O inimigo vai atacar! Aperte ESPAÇO no instante em que o golpe acertar.", "Na hora exata: bloqueia tudo.", "Quase na hora: leva só metade do dano."];
+		case "especial": return ["ESPECIAL PRONTO", "A energia está cheia!", "Escolha Especial para atingir todos os inimigos.", "Acertos perfeitos enchem a energia mais rápido."];
+		case "dado":     return ["O DADO DO BANCO", "O Banco de Dados rola um dado: cada face é um ataque diferente.", "NULL o deixa exposto (seu próximo golpe vale 2x).", "DROP TABLE é devastador: defenda bem!"];
+		case "python":   return ["TIPOS DO PYTHON", "O Python troca de tipo a cada 2 turnos.", "Use a habilidade do elemento fraco: INT = raio, STR = fogo, FLOAT = gelo.", "Cada golpe que ele acerta aumenta a cauda e envenena."];
+		case "molde":    return ["A BARRA DO MOLDE", "Errar o ritmo e repetir a mesma ação enchem o Molde.", "Se encher, a Nexa é moldada!", "Varie as ações e acerte o tempo para esvaziar a barra."];
+	}
+	return ["", ""];
+};
+// Mostra a dica uma vez só (devolve true se mostrou)
+mostrar_dica = function(_id) {
+	if (flag("tut_b_" + _id)) return false;
+	marcar("tut_b_" + _id);
+	dica = _id;
+	dica_t = 0;
+	return true;
+};
+
+// ===== CENÁRIO DA LUTA =====
+// Fundo por chefe: sala do Banco (spr_Luta01), do Python e do Chefe, escurecidos
+fundo_spr = spr_Luta01;
+if (global.andar == 2) fundo_spr = spr_sala_python;
+if (global.andar == 3) fundo_spr = spr_sala_urso;
+
+// Partículas do cenário: dados caindo (BD), código subindo (Python), brasas (Chefe)
+fundo_part = [];
+repeat (34) array_push(fundo_part, { x: random(480), y: random(270), v: random_range(0.3, 1.2), k: irandom(1) });
+
+// Textos da apresentação do chefe
+intro_info = { nome: "INIMIGOS", titulo: "Treino", cor: c_white, spr: -1, esc: 1 };
+switch (global.andar) {
+	case 1: intro_info = { nome: "BANCO DE DADOS", titulo: "Quem apaga a história das mulheres", cor: c_aqua, spr: spr_BancoDB, esc: 0.42 }; break;
+	case 2: intro_info = { nome: "PYTHON", titulo: "O veneno das 'brincadeiras'", cor: c_lime, spr: spr_python, esc: 1.25 }; break;
+	case 3: intro_info = { nome: "O CHEFE", titulo: "O dono do molde", cor: c_red, spr: spr_urso, esc: 0.8 }; break;
+}
+
+desenhar_fundo = function() {
+	var _sc = 480 / sprite_get_width(fundo_spr);
+	var _h = sprite_get_height(fundo_spr) * _sc;
+	var _oy = (270 - _h) / 2;
+	gpu_set_texfilter(true);
+	draw_sprite_ext(fundo_spr, 0, sprite_get_xoffset(fundo_spr) * _sc, _oy + sprite_get_yoffset(fundo_spr) * _sc,
+	                _sc, _sc, 0, c_white, 1);
+	gpu_set_texfilter(false);
+	// escurece para os personagens e textos aparecerem
+	draw_set_alpha(0.45);
+	draw_set_color(c_black);
+	draw_rectangle(0, 0, 480, 270, false);
+	// faixa escura embaixo para o menu (cobre também a marca d'água da arte)
+	draw_set_alpha(0.75);
+	draw_rectangle(0, 182, 480, 270, false);
+	// Chefe: a sala fica mais vermelha conforme o Molde sobe
+	if (molde_on) {
+		draw_set_alpha(0.25 * (molde / molde_max) + 0.05 * sin(current_time / 300));
+		draw_set_color(c_red);
+		draw_rectangle(0, 0, 480, 270, false);
+	}
+	// partículas
+	for (var i = 0; i < array_length(fundo_part); i++) {
+		var _p = fundo_part[i];
+		draw_set_alpha(0.35);
+		switch (global.andar) {
+			case 1:  draw_set_color(c_aqua);   draw_text_transformed(_p.x, _p.y, string(_p.k), 0.55, 0.55, 0); break;
+			case 2:  draw_set_color(c_lime);   draw_rectangle(_p.x, _p.y, _p.x + 2, _p.y + 1, false); break;
+			default: draw_set_color(c_orange); draw_circle(_p.x, _p.y, 1, false); break;
+		}
+	}
+	draw_set_alpha(1);
+	draw_set_color(c_white);
+};

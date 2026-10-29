@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "gamemaker": {
+      "type": "stdio",
+      "command": "C:\\Users\\kaual\\AppData\\Roaming\\npm\\gm-cli.cmd",
+      "args": [
+        "resourcetool",
+        "mcp",
+        "C:\\Users\\kaual\\Documents\\GitHub\\GameJam\\Sheborg.yyp"
+      ],
+      "env": {}
+    }
+  }
+}

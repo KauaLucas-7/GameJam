@@ -19,24 +19,24 @@ function boss_dmg_mult(_boss) {
 
 // golpe que acertou (defesa boa ou erro): veneno +1 e cauda cresce
 function boss_on_hit(_boss, _victim) {
-    _python.tail = min(BOSS_TAIL_MAX, _boss.tail + 1);
+    _boss.tail = min(BOSS_TAIL_MAX, _boss.tail + 1);
     status_add(_victim, "poison", 1, 3);
     return " Veneno x" + string(status_stacks(_victim, "poison")) + "!";
 }
 
 // defesa perfeita: cauda encolhe, sem veneno
 function boss_on_block(_boss) {
-    _python.tail = max(0, _boss.tail - 1);
+    _boss.tail = max(0, _boss.tail - 1);
     return " A cauda encolheu!";
 }
 
 // fim do turno dela: a cada 2 turnos, troca de tipo
 function boss_end_turn(_boss) {
-    _python.type_turns++;
+    _boss.type_turns++;
     if (_boss.type_turns < 2) return "";
-    _python.type_turns = 0;
+    _boss.type_turns = 0;
     var _new;
-    do { _new = irandom(array_length(global.boss_types) - 1); } until (_new != _python.type_index);
-    boss_set_type(_python, _new);
+    do { _new = irandom(array_length(global.boss_types) - 1); } until (_new != _boss.type_index);
+    boss_set_type(_boss, _new);
     return " Agora e " + global.boss_types[_new].name + "!";
 }

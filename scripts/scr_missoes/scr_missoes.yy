@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_missoes",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_missoes",
+  "parent":{
+    "name":"Sheborg",
+    "path":"Sheborg.yyp",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

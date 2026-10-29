@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_visual",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_visual",
+  "parent":{
+    "name":"Sheborg",
+    "path":"Sheborg.yyp",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
